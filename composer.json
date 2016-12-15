@@ -1,0 +1,68 @@
+{
+    "name": "iekadou/quickies",
+    "version": "v0.0.1",
+    "type": "library",
+    "description": "Quickies - A web framework for PHP based on django",
+    "keywords": ["web-framework"],
+    "homepage": "http://quickies.io",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonas Braun",
+            "email": "jonas@iekadou.com",
+            "homepage": "http://iekadou.com",
+            "role": "Project Founder"
+        }
+    ],
+    "require": {
+      "ircmaxell/password-compat": "dev-master",
+      "twig/twig": "~1.0",
+      "lare_team/twig_lare": ">=1.0.0",
+      "php": ">=5.3.3",
+      "phpmailer/phpmailer": "~5.2"
+    },
+    "require-dev": {
+        "symfony/phpunit-bridge": "~2.7",
+        "symfony/debug": "~2.7"
+    },
+    "autoload": {
+        "files": 
+            [
+                "lib/Quickies/classes/Account.php",
+                "lib/Quickies/classes/ApiSerializer.php",
+                "lib/Quickies/classes/ApiView.php",
+                "lib/Quickies/classes/BaseModel.php",
+                "lib/Quickies/classes/Choices.php",
+                "lib/Quickies/classes/DBConnector.php",
+                "lib/Quickies/classes/Files.php",
+                "lib/Quickies/classes/Globals.php",
+                "lib/Quickies/classes/Migration.php",
+                "lib/Quickies/classes/Pagination.php",
+                "lib/Quickies/classes/Settings.php",
+                "lib/Quickies/classes/Translation.php",
+                "lib/Quickies/classes/TwigTime.php",
+                "lib/Quickies/classes/TwigTrans.php",
+                "lib/Quickies/classes/TwigUrl.php",
+                "lib/Quickies/classes/Utils.php",
+                "lib/Quickies/classes/UrlsPy.php",
+                "lib/Quickies/classes/User.php",
+                "lib/Quickies/classes/ValidationError.php",
+                "lib/Quickies/classes/View.php",
+                "lib/Quickies/fields/Field.php",
+                "lib/Quickies/fields/VarcharField.php",
+                "lib/Quickies/fields/BooleanField.php",
+                "lib/Quickies/fields/ForeignKeyField.php",
+                "lib/Quickies/fields/IntegerField.php",
+                "lib/Quickies/fields/IntegerChoiceField.php",
+                "lib/Quickies/fields/PasswordField.php",
+                "lib/Quickies/fields/TextField.php",
+                "lib/Quickies/fields/TimestampField.php",
+                "lib/Quickies/fields/UrlField.php"
+         ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.24-dev"
+        }
+    }
+}
