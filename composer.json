@@ -36,6 +36,8 @@
                 "lib/Quickies/fields/IntegerField.php",
                 "lib/Quickies/fields/IntegerChoiceField.php",
                 "lib/Quickies/fields/PasswordField.php",
+                "lib/Quickies/fields/ReflectedForeignKeyField.php",
+                "lib/Quickies/fields/ReflectedM2MField.php",
                 "lib/Quickies/fields/TextField.php",
                 "lib/Quickies/fields/TimestampField.php",
                 "lib/Quickies/fields/UrlField.php",
