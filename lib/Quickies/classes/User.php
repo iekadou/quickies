@@ -4,14 +4,16 @@ namespace Iekadou\Quickies;
 
 class User extends BaseModel
 {
+    const _cn = "Iekadou\\Quickies\\User";
+
     protected $table = 'user';
     protected $fields = array(
-        'username' => array('type' => "Iekadou\\Quickies\\VarcharField", 'regex' => "/^[a-zA-Z0-9 ]{3,50}$/", 'unique' => true, 'min_length' => 3, 'max_length' => 10),
-        'email' => array('type' => "Iekadou\\Quickies\\VarcharField", 'min_length' => 3, 'max_length' => 254),
-        'password' => array('type' => "Iekadou\\Quickies\\VarcharField"),
-        'activated' => array('type' => "Iekadou\\Quickies\\BooleanField", 'default' => false),
-        'activation_key' => array('type' => "Iekadou\\Quickies\\VarcharField", 'default' => '', 'max_length' => 254, 'min_length' => 3),
-        'admin' => array('type' => "Iekadou\\Quickies\\BooleanField", 'default' => false)
+        'username' => array('type' => VarcharField::_cn, 'regex' => "/^[a-zA-Z0-9 ]{3,50}$/", 'unique' => true, 'min_length' => 3, 'max_length' => 10),
+        'email' => array('type' => VarcharField::_cn, 'min_length' => 3, 'max_length' => 254),
+        'password' => array('type' => VarcharField::_cn),
+        'activated' => array('type' => BooleanField::_cn, 'default' => false),
+        'activation_key' => array('type' => VarcharField::_cn, 'default' => '', 'max_length' => 254, 'min_length' => 3),
+        'admin' => array('type' => BooleanField::_cn, 'default' => false)
     );
     protected $custom_fields = array();
 

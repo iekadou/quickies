@@ -3,27 +3,25 @@ namespace Iekadou\Quickies;
 
 class Choices
 {
+    const _cn = "Iekadou\\Quickies\\Choices";
+
     protected static $choices = array();
 
-    public static function getKeys() {
+    public static function get_keys() {
         $class = get_called_class();
         return array_keys($class::$choices);
     }
 
-    public static function getValues() {
+    public static function get_values() {
         $class = get_called_class();
-        $return = array();
-        foreach(array_values($class::$choices) as $value) {
-            array_push($return, $value);
-        }
-        return $return;
+        return $class::$choices;
     }
 
     public static function get_by_name($name)
     {
         $class = get_called_class();
         foreach ($class::$choices as $key => $value) {
-            if ($value==$name) {
+            if ($value[0]==$name) {
                 return $key;
             }
         }

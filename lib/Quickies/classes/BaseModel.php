@@ -3,6 +3,8 @@ namespace Iekadou\Quickies;
 
 abstract class BaseModel
 {
+    const _cn = "Iekadou\\Quickies\\BaseModel";
+
     protected $data = array();
     protected $db_connection = null;
     protected $id = null;
@@ -18,7 +20,7 @@ abstract class BaseModel
         $this->_pre_construct();
         global $DB_CONNECTOR;
         if (!isset($DB_CONNECTOR)) {
-            $DB_CONNECTOR = new DBConnector();
+            $DB_CONNECTOR = _i(DBConnector::_cn);
         }
         $this->db_connection = $DB_CONNECTOR;
         if ($this->db_connection->get_connect_errno()) {
@@ -30,11 +32,14 @@ abstract class BaseModel
     }
 
     public function __isset($field_name) {
-        return isset($this->id) || isset($this->data[$field_name]) || isset($this->data[$field_name.'_id']) || method_exists($this, 'get_'.$field_name) ||
+        return $field_name == '_cn' || isset($this->id) || isset($this->data[$field_name]) || isset($this->data[$field_name.'_id']) || method_exists($this, 'get_'.$field_name) ||
             ((strpos($field_name, '_display') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_display'))]));
     }
 
     public function __get($field_name) {
+        if ($field_name == '_cn') {
+            return self::_cn;
+        }
         if ($field_name == 'id') {
             return $this->id;
         }
@@ -55,14 +60,11 @@ abstract class BaseModel
             $field = $this->fields[$field_name]['type'];
             $field = new $field($this->fields[$field_name]);
             $id = $field->_get($this, $field_name);
-            $obj = $this->fields[$field_name]['foreign_type'];
-            $obj = new $obj();
-            $obj = $obj->get($id);
-            return $obj;
+            return _i($this->fields[$field_name]['foreign_type'])->get($id);
         } else if (strpos($field_name, '_display') > 0) {
             $field_name = substr($field_name, 0, strpos($field_name, '_display'));
             $choices = $this->fields[$field_name]['choices'];
-            return $choices::get_by_id($this->$field_name);
+            return $choices::get_by_id($this->$field_name)[1];
         } else {
             return $this->$field_name;
         }
@@ -170,46 +172,8 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
     }
 
     protected function _get_field_query($field_name, $field) {
-        switch($field['type']) {
-            case "Iekadou\\Quickies\\BooleanField":
-                return "`".$field_name."` tinyint(1) NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\ForeignKeyField":
-                return "`".$field_name."` int(11) NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\IntegerChoiceField":
-                return "`".$field_name."` int(5) NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\IntegerField":
-                return "`".$field_name."` int(15) NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\PasswordField":
-                $max_length = (isset($field['max_length'])) ? $field['max_length'] : 254;
-                return "`".$field_name."` varchar(".$max_length.") NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\TextField":
-                return "`".$field_name."` text NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\TimestampField":
-                return "`".$field_name."` TIMESTAMP() NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\UrlField":
-                $max_length = (isset($field['max_length'])) ? $field['max_length'] : 254;
-                return "`".$field_name."` varchar(".$max_length.") NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\VarcharField":
-                $max_length = (isset($field['max_length'])) ? $field['max_length'] : 254;
-                return "`".$field_name."` varchar(".$max_length.") NOT NULL";
-                break;
-            case "Iekadou\\Quickies\\DecimalField":
-                $pre_dot_precision = (isset($field['pre_dot_precision'])) ? $field['pre_dot_precision'] : 10;
-                $pos_dot_precision = (isset($field['pos_dot_precision'])) ? $field['post_dot_precision'] : 5;
-                return "`".$field_name."` DECIMAL(".$pre_dot_precision.", ".$pos_dot_precision.") NOT NULL";
-                break;
-            default:
-                echo "UNKNOWN TYPE: ".$field['type']." at field: ".$field_name;
-                throw new ValidationError("UNKNOWN TYPE: ".$field['type']." at field: ".$field_name);
-
+        if (class_exists($field['type'])) {
+            _i($field['type'])->get_sql_part($field_name, $field);
         }
     }
 
@@ -225,9 +189,9 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                 if ($field1[$key] != $field2[$key]) {
                     if (($field1['type'] == "Iekadou\\Quickies\\PasswordField" && $key == 'max_length') ||
                         ($field1['type'] == "Iekadou\\Quickies\\UrlField" && $key == 'max_length') ||
-                        ($field1['type'] == "Iekadou\\Quickies\\VarcharField" && $key == 'max_length') ||
-                        ($field1['type'] == "Iekadou\\Quickies\\ForeignKeyField" && $key == 'foreign_type') ||
-                        ($field1['type'] == "Iekadou\\Quickies\\IntegerChoiceField" && $key == 'choices')) {
+                        ($field1['type'] == VarcharField::_cn && $key == 'max_length') ||
+                        ($field1['type'] == ForeignKeyField::_cn && $key == 'foreign_type') ||
+                        ($field1['type'] == IntegerChoiceField::_cn && $key == 'choices')) {
                         $changes[$key] = $value;
                     }
                 }
@@ -262,7 +226,9 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         if ($obj_query->num_rows == 1) {
             $obj = $obj_query->fetch_object();
             foreach($this->fields as $field_name => $field) {
-                $this->$field_name = $obj->$field_name;
+                if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                    $this->$field_name = $obj->$field_name;
+                }
             }
             $this->id = $obj->id;
             return $this;
@@ -276,16 +242,16 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $update_str = '';
         $i = 0;
         foreach($this->fields as $field_name => $field) {
-            $field_wrapper = $this->fields[$field_name]['type'];
-            $field_wrapper = new $field_wrapper();
-            if (!$field_wrapper->_validate_pre_db($this, $field_name)) {
-                $this->errors[] = $field_name;
+            if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                if (!_i($this->fields[$field_name]['type'])->_validate_pre_db($this, $field_name)) {
+                    $this->errors[] = $field_name;
+                }
+                if ($i > 0) {
+                    $update_str .= ", ";
+                }
+                $i++;
+                $update_str .= $field_name . " = '" . $this->$field_name . "'";
             }
-            if ($i > 0) {
-                $update_str .= ", ";
-            }
-            $i++;
-            $update_str .= $field_name." = '".$this->$field_name."'";
         }
         if (!empty($this->errors)) {
             throw new ValidationError($this->errors);
@@ -303,28 +269,30 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $insert_str = '(';
         $i = 0;
         foreach($this->fields as $field_name => $field) {
-            $field_wrapper = $this->fields[$field_name]['type'];
-            $field_wrapper = new $field_wrapper();
-            if (!$field_wrapper->_validate_pre_db($this, $field_name)) {
-                $this->errors[] = $field_name;
+            if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                if (!_i($this->fields[$field_name]['type'])->_validate_pre_db($this, $field_name)) {
+                    $this->errors[] = $field_name;
+                }
+                if ($i > 0) {
+                    $insert_str .= ", ";
+                }
+                $i++;
+                $insert_str .= $field_name;
             }
-            if ($i > 0) {
-                $insert_str .= ", ";
-            }
-            $i++;
-            $insert_str .= $field_name;
         }
         $insert_str .= ') VALUES (';
         $i = 0;
         foreach($this->fields as $field_name => $field) {
-            if ($i > 0) {
-                $insert_str .= ", ";
+            if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                if ($i > 0) {
+                    $insert_str .= ", ";
+                }
+                $i++;
+                if (!isset($this->$field_name)) {
+                    $this->$field_name = '';
+                }
+                $insert_str .= "'" . $this->$field_name . "'";
             }
-            $i++;
-            if (!isset($this->$field_name)) {
-                $this->$field_name = '';
-            }
-            $insert_str .= "'".$this->$field_name."'";
         }
 
         $insert_str .= ')';
@@ -454,7 +422,9 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         if ($obj_query && $obj_query->num_rows == 1) {
             $obj = $obj_query->fetch_object();
             foreach($this->fields as $field_name => $field) {
-                $this->$field_name = $obj->$field_name;
+                if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                    $this->$field_name = $obj->$field_name;
+                }
             }
             $this->id = $obj->id;
             return $this;
@@ -499,10 +469,11 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $obj_query = $this->db_connection->query("SELECT * FROM ".$this->table." ".$condition_str." ".$order_str." ".$limit_str.";");
         if ($obj_query) {
             while ($row = $obj_query->fetch_object()) {
-                $class = get_class($this);
-                $obj = new $class();
+                $obj = _i(get_class($this));
                 foreach($this->fields as $field_name => $field) {
-                    $obj->$field_name = $row->$field_name;
+                    if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                        $obj->$field_name = $row->$field_name;
+                    }
                 }
                 $obj->id = $row->id;
                 $obj_array[] = $obj;
@@ -530,6 +501,10 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             throw new ValidationError($this->errors);
         }
         return $this;
+    }
+
+    public static function _cn() {
+        return get_called_class();
     }
 
 }

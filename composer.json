@@ -28,10 +28,22 @@
     "autoload": {
         "files": 
             [
+                "lib/Quickies/fields/Field.php",
+                "lib/Quickies/fields/VarcharField.php",
+                "lib/Quickies/fields/DecimalField.php",
+                "lib/Quickies/fields/BooleanField.php",
+                "lib/Quickies/fields/ForeignKeyField.php",
+                "lib/Quickies/fields/IntegerField.php",
+                "lib/Quickies/fields/IntegerChoiceField.php",
+                "lib/Quickies/fields/PasswordField.php",
+                "lib/Quickies/fields/TextField.php",
+                "lib/Quickies/fields/TimestampField.php",
+                "lib/Quickies/fields/UrlField.php",
                 "lib/Quickies/classes/Account.php",
                 "lib/Quickies/classes/ApiSerializer.php",
                 "lib/Quickies/classes/ApiView.php",
                 "lib/Quickies/classes/BaseModel.php",
+                "lib/Quickies/classes/Renderable.php",
                 "lib/Quickies/classes/BaseModelForm.php",
                 "lib/Quickies/classes/Choices.php",
                 "lib/Quickies/classes/DBConnector.php",
@@ -49,18 +61,7 @@
                 "lib/Quickies/classes/UrlsPy.php",
                 "lib/Quickies/classes/User.php",
                 "lib/Quickies/classes/ValidationError.php",
-                "lib/Quickies/classes/View.php",
-                "lib/Quickies/fields/Field.php",
-                "lib/Quickies/fields/VarcharField.php",
-                "lib/Quickies/fields/DecimalField.php",
-                "lib/Quickies/fields/BooleanField.php",
-                "lib/Quickies/fields/ForeignKeyField.php",
-                "lib/Quickies/fields/IntegerField.php",
-                "lib/Quickies/fields/IntegerChoiceField.php",
-                "lib/Quickies/fields/PasswordField.php",
-                "lib/Quickies/fields/TextField.php",
-                "lib/Quickies/fields/TimestampField.php",
-                "lib/Quickies/fields/UrlField.php"
+                "lib/Quickies/classes/View.php"
          ]
     },
     "extra": {

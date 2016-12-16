@@ -7,6 +7,8 @@ use Lare_Team\Lare\Lare as Lare;
 
 class View extends Renderable
 {
+    const _cn = "Iekadou\\Quickies\\View";
+
     public function _post_construct() {
         // Lare
         Lare::set_current_namespace(LARE_PREFIX.'.'.$this->id);

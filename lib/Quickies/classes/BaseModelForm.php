@@ -2,20 +2,65 @@
 
 namespace Iekadou\Quickies;
 
+use Twig_Environment;
+use Twig_Loader_Filesystem;
+
 class BaseModelForm extends Renderable {
-    protected $model = "Ieakdou\\Quickies\\BaseModel";
+    const _cn = "Iekadou\\Quickies\\BaseModelForm";
+
+    protected $model = "";
     protected $object_id;
     protected $fields = array();
+    protected $template_name = '_include/_form.html';
 
-    public function render() {
-        $Model = $this->model;
-        $Model = new $Model();
-
-        $fields_to_render = array();
-        foreach ($this->fields as $field_name) {
-            $field = $this->fields[$field_name];
-            array_push($fields_to_render, $field);
+    public function __construct($model, $fields, $object_id=null)
+    {
+        global $DB_CONNECTOR;
+        if (!isset($DB_CONNECTOR)) {
+            $DB_CONNECTOR = _i(DBConnector::_cn);
+        }
+        $this->db_connection = $DB_CONNECTOR;
+        if ($this->db_connection->get_connect_errno()) {
+            $this->errors[] = "db";
         }
 
+        $loader = new Twig_Loader_Filesystem(PATH.'templates');
+        if (TEMPLATE_CACHING) {
+            $this->template = new Twig_Environment($loader, array(
+                'cache' => PATH.'cached_templates',
+            ));
+        } else {
+            $this->template = new Twig_Environment($loader, array());
+        }
+        $this->model = $model;
+        $this->fields = $fields;
+        $this->object_id = $object_id;
+    }
+
+    public function render($display=false) {
+        $render_fields = array();
+        if (isset($this->object_id)) {
+            $obj = _i($this->model)->get($this->object_id);
+        } else {
+            $obj = _i($this->model);
+        }
+        foreach($this->fields as $field_name) {
+            if (isset($obj->fields[$field_name])) {
+                $render_fields[$field_name]['opts'] =$obj->fields[$field_name];
+                if ($obj->id) {
+                    $render_fields[$field_name]['value'] = $obj->$field_name;
+                }
+                if ($obj->fields[$field_name]['type'] == IntegerChoiceField::_cn) {
+                    $render_fields[$field_name]['choices'] = _i($obj->fields[$field_name]['choices'])->get_values();
+                }
+            }
+        }
+        $this->set_template_var('render_fields', $render_fields);
+        $this->pre_render();
+        if ($display) {
+            echo $this->template->render($this->template_name, $this->get_template_vars());
+        } else {
+            return $this->template->render($this->template_name, $this->get_template_vars());
+        }
     }
 }

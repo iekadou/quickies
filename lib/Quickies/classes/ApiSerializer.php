@@ -3,6 +3,8 @@ namespace Iekadou\Quickies;
 
 class ApiSerializer
 {
+    const _cn = "Iekadou\\Quickies\\ApiSerializer";
+
     public $model;
     public $fields = array();
     public $write_only_fields = array();
@@ -11,7 +13,7 @@ class ApiSerializer
     public $filter_opts = array();
     public $sort_opts = array();
     public $source_fields = array();
-    public $allowed_methods = array("GET", "PUT", "POST");
+    public $allowed_methods = array("GET", "PUT", "POST", "DELETE");
     public $serializer_instance_id = null;
 
     public function serialize($instances) {

@@ -3,6 +3,8 @@ namespace Iekadou\Quickies;
 
 class Translation
 {
+    const _cn = "Iekadou\\Quickies\\Translation";
+
     private static $languageDict = array();
     public function __construct() {
         if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {

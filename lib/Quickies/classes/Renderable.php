@@ -9,6 +9,8 @@ use Twig_SimpleFilter;
 
 class Renderable
 {
+    const _cn = "Iekadou\\Quickies\\Renderable";
+
     protected $id = "";
     protected $name = "";
     protected $template;

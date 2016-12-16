@@ -3,6 +3,8 @@ namespace Iekadou\Quickies;
 
 class Files
 {
+    const _cn = "Iekadou\\Quickies\\Files";
+
     private static $allowedExtensions = array();
     private static $filetypes = array();
     public function __construct() {

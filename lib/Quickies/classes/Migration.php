@@ -2,11 +2,13 @@
 namespace Iekadou\Quickies;
 
 class Migration {
+    const _cn = "Iekadou\\Quickies\\Migration";
+
     private $db_connection = null;
     private $migrations_done = array();
 
     public function __construct() {
-        $this->db_connection = new DBConnector();
+        $this->db_connection = _i(DBConnector::_cn);
         if (!$this->db_connection->get_connect_errno()) {
             $this->errors[] = "Database connection problem.";
         }

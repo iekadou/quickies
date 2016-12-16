@@ -4,6 +4,8 @@ namespace Iekadou\Quickies;
 
 class DBConnector {
 
+    const _cn = "Iekadou\\Quickies\\DBConnector";
+
     private $db_connection = null;
 
     public function __construct() {

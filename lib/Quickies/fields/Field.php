@@ -2,6 +2,8 @@
 namespace Iekadou\Quickies;
 
 class Field {
+    const _cn = "Iekadou\\Quickies\\Field";
+
     public function _get($obj, $field_name) {
         return $obj->get_data($field_name);
     }
@@ -19,12 +21,15 @@ class Field {
     }
     public function _validate_pre_db($obj, $field_name) {
         if (isset($obj->fields[$field_name]['unique'])) {
-            $class = get_class($obj);
-            $tester = new $class();
-            if ($tester->count_by(array(array($field_name, '=', $obj->$field_name), array('id', '!=', $obj->id))) > 0) {
+            if (_i($obj::_cn)->count_by(array(array($field_name, '=', $obj->$field_name), array('id', '!=', $obj->id))) > 0) {
                 return false;
             }
         }
         return true;
     }
+
+    public function get_sql_part($field_name, $field) {
+        return "";
+    }
+
 }

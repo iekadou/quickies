@@ -3,6 +3,8 @@ namespace Iekadou\Quickies;
 
 class Pagination
 {
+    const _cn = "Iekadou\\Quickies\\Pagination";
+
     private $pages = array();
     private $page, $page_count, $page_size, $page_offset, $query_offset;
     public function __construct($page = 1, $obj_count = 1, $page_size = 30, $page_offset=2, $url='../%s/')

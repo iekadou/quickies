@@ -2,6 +2,8 @@
 namespace Iekadou\Quickies;
 
 class Utils {
+    const _cn = "Iekadou\\Quickies\\Utils";
+
     public static function raise404()
     {
         global $INIT_LOADED;
@@ -90,4 +92,8 @@ class Utils {
         }
         return $result;
     }
+}
+
+function _i($x) {
+    return new $x();
 }

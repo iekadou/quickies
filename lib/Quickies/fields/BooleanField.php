@@ -2,6 +2,7 @@
 namespace Iekadou\Quickies;
 
 class BooleanField extends Field {
+    const _cn = "Iekadou\\Quickies\\BooleanField";
 
     public function _get($obj, $field_name) {
         if ($obj->get_data($field_name)) {
@@ -19,4 +20,7 @@ class BooleanField extends Field {
         return $obj;
     }
 
+    public function get_sql_part($field_name, $field) {
+        return "`".$field_name."` tinyint(1) NOT NULL";
+    }
 }

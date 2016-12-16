@@ -4,6 +4,8 @@ namespace Iekadou\Quickies;
 use Lare_Team\Lare\Lare as Lare;
 
 class Globals {
+    const _cn = "Iekadou\\Quickies\\Globals";
+
     private static $vars = array();
 
     public function __construct() {

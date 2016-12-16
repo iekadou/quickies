@@ -3,6 +3,8 @@ namespace Iekadou\Quickies;
 
 class ApiView
 {
+    const _cn = "Iekadou\\Quickies\\ApiView";
+
     static private $serializer;
 
     public function __construct($serializer)
@@ -21,6 +23,9 @@ class ApiView
             if (!isset(self::$serializer->serializer_instance_id)) {
                 if (isset($_GET['id'])) {
                     self::$serializer->serializer_instance_id = $_GET['id'];
+                }
+                if (isset($_POST['id'])) {
+                    self::$serializer->serializer_instance_id = $_POST['id'];
                 }
             }
             $writable_fields = array();

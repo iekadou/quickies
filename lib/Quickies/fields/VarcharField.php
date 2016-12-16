@@ -2,6 +2,8 @@
 namespace Iekadou\Quickies;
 
 class VarcharField extends Field {
+    const _cn = "Iekadou\\Quickies\\VarcharField";
+
     public function _validate($obj, $field_name, $value) {
         if (isset($obj->fields[$field_name]['regex'])) {
             if (!preg_match($obj->fields[$field_name]['regex'], $value)) {
@@ -20,5 +22,10 @@ class VarcharField extends Field {
             }
         }
         return true;
+    }
+
+    public function get_sql_part($field_name, $field) {
+        $max_length = (isset($field['max_length'])) ? $field['max_length'] : 254;
+        return "`".$field_name."` varchar(".$max_length.") NOT NULL";
     }
 }

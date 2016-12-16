@@ -6,14 +6,13 @@
         $errors = array();
         $identification = (isset($_POST['identification']) ? htmlspecialchars($_POST['identification']) : false);
         $login_user = false;
-        $User = new $UserClass();
 
         if ($identification == false || $identification == '') {
             $errors[] = "identification";
         } else {
-            $login_user = $User->get_by(array(array('username', '=', $identification)));
+            $login_user = _i($UserClass)->get_by(array(array('username', '=', $identification)));
             if ($login_user == false) {
-                $login_user = $User->get_by(array(array('email', '=', $identification)));
+                $login_user = _i($UserClass)->get_by(array(array('email', '=', $identification)));
             }
             if ($login_user == false) {
                $errors[] = "identification";

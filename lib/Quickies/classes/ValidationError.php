@@ -4,6 +4,8 @@ namespace Iekadou\Quickies;
 
 class ValidationError extends \Exception
 {
+    const _cn = "Iekadou\\Quickies\\ValidationError";
+
     protected $errors = array();
 
     public function __construct($errors) {

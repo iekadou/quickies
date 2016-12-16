@@ -3,6 +3,8 @@ namespace Iekadou\Quickies;
 
 class Account
 {
+    const _cn = "Iekadou\\Quickies\\Account";
+
     private static $db_connection = null;
     private static $user = null;
     private static $user_is_logged_in = false;
@@ -10,7 +12,7 @@ class Account
 
     public function __construct()
     {
-        Account::$db_connection = new DBConnector();
+        Account::$db_connection = _i(DBConnector::_cn);
         if (Account::$db_connection->get_connect_errno()) {
             Account::$errors[] = "db";
             throw new ValidationError(Account::$errors);
@@ -76,7 +78,7 @@ class Account
             return Account::$user;
         } else {
             global $UserClass;
-            $User = new $UserClass();
+            $User = _i($UserClass);
             Account::$user = $User->get(Account::get_user_id());
             return Account::$user;
         }
@@ -85,14 +87,12 @@ class Account
     public static function generate_remember_token($userid) {
         $remember_token = str_shuffle(MD5(microtime()));
         setcookie("remember_me", $remember_token, time() + 3600*24*365, '/');
-        $db_connection = new DBConnector();
-        $db_connection->query("INSERT INTO remember (userid, token, expires) VALUES ('".$userid."', '".hash('sha256', $remember_token)."', '".(time()+3600*24*365)."');");
+        _i(DBConnector::_cn)->query("INSERT INTO remember (userid, token, expires) VALUES ('".$userid."', '".hash('sha256', $remember_token)."', '".(time()+3600*24*365)."');");
         return $remember_token;
     }
 
     public static function remember_user($remember_token) {
-        $db_connection = new DBConnector();
-        $obj_query = $db_connection->query("SELECT userid FROM remember WHERE token = '" . hash('sha256', $remember_token) . "' and expires > ".time().";");
+        $obj_query = _i(DBConnector::_cn)->query("SELECT userid FROM remember WHERE token = '" . hash('sha256', $remember_token) . "' and expires > ".time().";");
         if ($obj_query->num_rows == 1) {
             $obj = $obj_query->fetch_object();
             $_SESSION['user_logged_in'] = true;
@@ -102,8 +102,7 @@ class Account
     }
 
     public static function api_user($apnkey) {
-        $db_connection = new DBConnector();
-        $obj_query = $db_connection->query("SELECT id FROM user WHERE apnkey = '".$db_connection->real_escape_string($apnkey)."';");
+        $obj_query = _i(DBConnector::_cn)->query("SELECT id FROM user WHERE apnkey = '".Account::$db_connection->real_escape_string($apnkey)."';");
         if ($obj_query->num_rows == 1) {
             $obj = $obj_query->fetch_object();
             $_SESSION['user_logged_in'] = true;

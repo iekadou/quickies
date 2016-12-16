@@ -7,7 +7,7 @@
         public function __construct()
         {
             global $UserClass;
-            $this->model = new $UserClass();
+            $this->model = _i($UserClass);
             $this->fields = array('username', 'email', 'password', 'apnkey');
             $this->filter_opts = array(array('id', '=', Account::get_user_id()));
             $this->allowed_methods = array('PUT');
@@ -17,7 +17,7 @@
     }
 
     $ApiView = new ApiView(
-        $serializer = new UserSerializer()
+        $serializer = _i(UserSerializer::_cn)
     );
     $result = $ApiView->render();
     echo $result;

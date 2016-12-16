@@ -2,6 +2,8 @@
 namespace Iekadou\Quickies;
 
 class UrlsPy {
+    const _cn = "Iekadou\\Quickies\\UrlsPy";
+
     private static $patterns = array();
     public function __construct() {
         $lines = file(PATH.".htaccess");
