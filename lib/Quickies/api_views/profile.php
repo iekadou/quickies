@@ -16,8 +16,8 @@
         }
     }
 
-    new ApiView(
+    $ApiView = new ApiView(
         $serializer = new UserSerializer()
     );
-    $result = ApiView::render();
+    $result = $ApiView->render();
     echo $result;

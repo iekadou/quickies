@@ -201,9 +201,15 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                 $max_length = (isset($field['max_length'])) ? $field['max_length'] : 254;
                 return "`".$field_name."` varchar(".$max_length.") NOT NULL";
                 break;
+            case "Iekadou\\Quickies\\DecimalField":
+                $pre_dot_precision = (isset($field['pre_dot_precision'])) ? $field['pre_dot_precision'] : 10;
+                $pos_dot_precision = (isset($field['pos_dot_precision'])) ? $field['post_dot_precision'] : 5;
+                return "`".$field_name."` DECIMAL(".$pre_dot_precision.", ".$pos_dot_precision.") NOT NULL";
+                break;
             default:
                 echo "UNKNOWN TYPE: ".$field['type']." at field: ".$field_name;
-                return "";
+                throw new ValidationError("UNKNOWN TYPE: ".$field['type']." at field: ".$field_name);
+
         }
     }
 
