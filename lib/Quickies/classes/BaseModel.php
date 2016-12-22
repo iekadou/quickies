@@ -37,7 +37,9 @@ abstract class BaseModel
 
     public function __isset($field_name) {
         return $field_name == '_cn' || isset($this->id) || isset($this->data[$field_name]) || isset($this->data[$field_name.'_id']) || method_exists($this, 'get_'.$field_name) ||
-            ((strpos($field_name, '_display') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_display'))]));
+            ((strpos($field_name, '_display') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_display'))])) ||
+            ((strpos($field_name, '_filename') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_filename'))])) ||
+            ((strpos($field_name, '_filetype') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_filetype'))]));
     }
 
     public function __get($field_name) {
@@ -69,6 +71,12 @@ abstract class BaseModel
             $field_name = substr($field_name, 0, strpos($field_name, '_display'));
             $choices = $this->fields[$field_name]['choices'];
             return $choices::get_by_id($this->$field_name)[1];
+        } else if (strpos($field_name, '_filename') > 0) {
+            $field_name = substr($field_name, 0, strpos($field_name, '_filename'));
+            return basename($this->$field_name);
+        } else if (strpos($field_name, '_filetype') > 0) {
+            $field_name = substr($field_name, 0, strpos($field_name, '_filetype'));
+            return Utils::getMimeType(PATH.$this->$field_name);
         } else {
             return $this->$field_name;
         }
@@ -241,7 +249,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             $obj = $obj_query->fetch_object();
             foreach($this->fields as $field_name => $field) {
                 if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
-                    $this->$field_name = $obj->$field_name;
+                    $this->$field_name = Utils::mysql_unescape_string($obj->$field_name);
                 }
             }
             $this->id = $obj->id;
@@ -270,7 +278,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         if (!empty($this->errors)) {
             throw new ValidationError($this->errors);
         }
-        $obj_query = $this->db_connection->query("UPDATE ".$this->table." set ".$update_str." WHERE id = '" . $this->id . "';");
+        $obj_query = $this->db_connection->query("UPDATE ".$this->table." set ".$this->db_connection->real_escape_string($update_str)." WHERE id = '" . $this->id . "';");
         if ($obj_query) {
             return $this;
         }
@@ -302,10 +310,13 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                     $insert_str .= ", ";
                 }
                 $i++;
+                if ($this->fields[$field_name]['type'] == TimestampField::_cn && isset($this->fields[$field_name]['auto_create']) && $this->fields[$field_name]['auto_create']) {
+                    $this->$field_name = time();
+                }
                 if (!isset($this->$field_name)) {
                     $this->$field_name = '';
                 }
-                $insert_str .= "'" . $this->$field_name . "'";
+                $insert_str .= "'".$this->db_connection->real_escape_string($this->$field_name )."'";
             }
         }
 
@@ -334,6 +345,13 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         if ($id) {
             $user_query = $this->db_connection->query("DELETE FROM ".$this->table." WHERE id = '" . $id . "';");
             if ($user_query) {
+                foreach($this->fields as $field_name => $field) {
+                    if ($this->fields[$field_name]['type'] == FileField::_cn) {
+                        if (file_exists(PATH.$this->$field_name) && is_file(PATH.$this->$field_name)) {
+                            unlink(PATH.$this->$field_name);
+                        }
+                    }
+                }
                 return true;
             }
         }
@@ -437,7 +455,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             $obj = $obj_query->fetch_object();
             foreach($this->fields as $field_name => $field) {
                 if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
-                    $this->$field_name = $obj->$field_name;
+                    $this->$field_name = Utils::mysql_unescape_string($obj->$field_name);
                 }
             }
             $this->id = $obj->id;
@@ -486,7 +504,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                 $obj = _i(get_class($this));
                 foreach($this->fields as $field_name => $field) {
                     if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
-                        $obj->$field_name = $row->$field_name;
+                        $obj->$field_name = Utils::mysql_unescape_string($row->$field_name);
                     }
                 }
                 $obj->id = $row->id;
@@ -504,8 +522,19 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $this->reset_errors();
         foreach($this->fields as $field_name => $field) {
             if (!$fields || in_array($field_name, $fields)) {
-                if (isset($POST[$field_name])) {
+                if (isset($POST[$field_name]) && $this->fields[$field_name]['type'] != FileField::_cn) {
                     $this->$field_name = $POST[$field_name];
+                } elseif (isset($FILES[$field_name]) && $this->fields[$field_name]['type'] == FileField::_cn) {
+                    $ext = pathinfo($FILES[$field_name]['name'], PATHINFO_EXTENSION);
+                    $i = 0;
+                    $uploadfile = UPLOADDIR.md5(basename($FILES[$field_name]['name'])+$i).".".$ext;
+                    while (file_exists(PATH.$uploadfile)) {
+                        $i++;
+                        $uploadfile = UPLOADDIR.md5(basename($FILES[$field_name]['name'])+$i).".".$ext;
+                    }
+                    if (move_uploaded_file($FILES[$field_name]['tmp_name'], PATH.$uploadfile)) {
+                        $this->$field_name = $uploadfile;
+                    }
                 } else {
                     $this->$field_name = null;
                 }

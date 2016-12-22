@@ -33,6 +33,7 @@
                 "lib/Quickies/fields/DecimalField.php",
                 "lib/Quickies/fields/BooleanField.php",
                 "lib/Quickies/fields/ForeignKeyField.php",
+                "lib/Quickies/fields/FileField.php",
                 "lib/Quickies/fields/IntegerField.php",
                 "lib/Quickies/fields/IntegerChoiceField.php",
                 "lib/Quickies/fields/PasswordField.php",

@@ -8,9 +8,8 @@ class Field {
         return $obj->get_data($field_name);
     }
     public function _set($obj, $field_name, $value) {
-        global $DB_CONNECTOR;
         if ($this->_validate($obj, $field_name, $value)) {
-            $obj->set_data($field_name, $DB_CONNECTOR->real_escape_string($value));
+            $obj->set_data($field_name, $value);
         } else {
             $obj->errors[] = $field_name;
         }
