@@ -10,7 +10,7 @@ class Field {
     public function _set($obj, $field_name, $value) {
         global $DB_CONNECTOR;
         if ($this->_validate($obj, $field_name, $value)) {
-            $obj->set_data($field_name, $DB_CONNECTOR->real_escape_string(htmlentities($value, ENT_QUOTES)));
+            $obj->set_data($field_name, $DB_CONNECTOR->real_escape_string($value));
         } else {
             $obj->errors[] = $field_name;
         }

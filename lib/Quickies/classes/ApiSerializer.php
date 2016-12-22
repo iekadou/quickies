@@ -75,6 +75,11 @@ class ApiSerializer
                 }
             }
         }
+        if (isset($this->instance_template)) {
+            $rendered_html = new Renderable($id=null, $name=null, $template=$this->instance_template);
+            $rendered_html->set_template_var('instance', $instance);
+            $return['rendered_html'] = $rendered_html->render(false);
+        }
         return $return;
     }
     

@@ -53,6 +53,15 @@ class BaseModelForm extends Renderable {
                 if ($obj->fields[$field_name]['type'] == IntegerChoiceField::_cn) {
                     $render_fields[$field_name]['choices'] = _i($obj->fields[$field_name]['choices'])->get_values();
                 }
+                if ($obj->fields[$field_name]['type'] == ForeignKeyField::_cn) {
+                    $array = array();
+                    foreach(_i($obj->fields[$field_name]['foreign_type'])->filter_by() as $fk_obj) {
+                        $array[$fk_obj->id] = $fk_obj->name;
+                    }
+                    $render_fields[$field_name]['choices'] = $array;
+
+                }
+                $render_fields[$field_name]['opts']['verbose_name'] = $obj->get_field_verbose_name($field_name);
             }
         }
         $this->set_template_var('render_fields', $render_fields);

@@ -9,7 +9,20 @@ class Choices
 
     public static function get_keys() {
         $class = get_called_class();
-        return array_keys($class::$choices);
+        $return = array();
+        foreach($class::$choices as $key => $value) {
+            $return[$value[0]] = $key;
+        }
+        return $return;
+    }
+
+    public function get_keys_dynamic() {
+        $class = get_called_class();
+        $return = array();
+        foreach($class::$choices as $key => $value) {
+            $return[$value[0]] = $key;
+        }
+        return $return;
     }
 
     public static function get_values() {
@@ -21,7 +34,7 @@ class Choices
     {
         $class = get_called_class();
         foreach ($class::$choices as $key => $value) {
-            if ($value[0]==$name) {
+            if ($value[0] == $name) {
                 return $key;
             }
         }

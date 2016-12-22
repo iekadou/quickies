@@ -27,7 +27,11 @@ abstract class BaseModel
             $this->errors[] = "db";
         }
         foreach($this->fields as $field_name => $field) {
-            $this->data[$field_name] = "";
+            if (isset($field['default'])) {
+                $this->data[$field_name] = $field['default'];
+            } else {
+                $this->data[$field_name] = "";
+            }
         }
     }
 
@@ -71,19 +75,23 @@ abstract class BaseModel
     }
 
     public function __set($field_name, $value) {
-        if ($field_name == in_array($field_name, array_keys($this->fields)) || $field_name.'_id' == in_array($field_name, array_keys($this->fields))) {
-            $method_name = 'set_'.$field_name;
-            if (method_exists($this, $method_name)) {
-                return $this->$method_name($value);
+
+        if (isset($value)) {
+            if ($field_name == in_array($field_name, array_keys($this->fields)) || $field_name . '_id' == in_array($field_name, array_keys($this->fields))) {
+                $method_name = 'set_' . $field_name;
+                if (method_exists($this, $method_name)) {
+                    return $this->$method_name($value);
+                }
+                $field = $this->fields[$field_name]['type'];
+                $field = new $field($this->fields[$field_name]);
+                $field->_set($this, $field_name, $value);
+                return $this;
+            } else {
+                $this->$field_name = $value;
+                return $this;
             }
-            $field = $this->fields[$field_name]['type'];
-            $field = new $field($this->fields[$field_name]);
-            $field->_set($this, $field_name, $value);
-            return $this;
-        } else {
-            $this->$field_name = $value;
-            return $this;
         }
+        return $this;
     }
 
     public function makemigrations() {
@@ -108,18 +116,22 @@ abstract class BaseModel
             $latest_migration_name = PATH.'migrations/'.$this->table.'_'.$latest_migration.'.php';
             include($latest_migration_name);
             foreach($this->fields as $field_name => $field) {
-                if (!isset($migration['fields'][$field_name])) {
-                    $new_fields[$field_name] = $this->fields[$field_name];
-                } else {
-                    $changes = $this->_detect_field_changes($this->fields[$field_name], $migration['fields'][$field_name]);
-                    if (!empty($changes)) {
-                        $change_fields[$field_name] = $changes;
+                if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                    if (!isset($migration['fields'][$field_name])) {
+                        $new_fields[$field_name] = $this->fields[$field_name];
+                    } else {
+                        $changes = $this->_detect_field_changes($this->fields[$field_name], $migration['fields'][$field_name]);
+                        if (!empty($changes)) {
+                            $change_fields[$field_name] = $changes;
+                        }
                     }
                 }
             }
             foreach($migration['fields'] as $field_name => $field) {
-                if (!isset($this->fields[$field_name])) {
-                    $del_fields[$field_name] = $migration['fields'][$field_name];
+                if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
+                    if (!isset($this->fields[$field_name])) {
+                        $del_fields[$field_name] = $migration['fields'][$field_name];
+                    }
                 }
             }
         } else {
@@ -173,7 +185,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
 
     protected function _get_field_query($field_name, $field) {
         if (class_exists($field['type'])) {
-            _i($field['type'])->get_sql_part($field_name, $field);
+            return _i($field['type'])->get_sql_part($field_name, $field);
         }
     }
 
@@ -191,7 +203,9 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                         ($field1['type'] == "Iekadou\\Quickies\\UrlField" && $key == 'max_length') ||
                         ($field1['type'] == VarcharField::_cn && $key == 'max_length') ||
                         ($field1['type'] == ForeignKeyField::_cn && $key == 'foreign_type') ||
-                        ($field1['type'] == IntegerChoiceField::_cn && $key == 'choices')) {
+                        ($field1['type'] == IntegerChoiceField::_cn && $key == 'choices') ||
+                        $key == 'required' ||
+                        $key == 'default') {
                         $changes[$key] = $value;
                     }
                 }
@@ -221,7 +235,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
     public function get($id)
     {
         $this->reset_errors();
-        $id = $this->db_connection->real_escape_string(htmlentities($id, ENT_QUOTES));
+        $id = $this->db_connection->real_escape_string($id);
         $obj_query = $this->db_connection->query("SELECT * FROM ".$this->table." WHERE id = '" . $id . "';");
         if ($obj_query->num_rows == 1) {
             $obj = $obj_query->fetch_object();
@@ -313,7 +327,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
     {
         $this->reset_errors();
         if ($id) {
-            $id = $this->db_connection->real_escape_string(htmlentities($id, ENT_QUOTES));
+            $id = $this->db_connection->real_escape_string($id, ENT_QUOTES);
         } else {
             $id = $this->id;
         }
@@ -339,7 +353,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
                 $i++;
-                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string(htmlentities($condition[2], ENT_QUOTES))."'";
+                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
         }
         if ($i > 0) {
@@ -364,7 +378,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
                 $i++;
-                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string(htmlentities($condition[2], ENT_QUOTES))."'";
+                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
         }
         $order_str = '';
@@ -398,7 +412,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
                 $i++;
-                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string(htmlentities($condition[2], ENT_QUOTES))."'";
+                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
         }
         $order_str = '';
@@ -445,7 +459,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
                 $i++;
-                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string(htmlentities($condition[2], ENT_QUOTES))."'";
+                $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
         }
         $order_str = '';
@@ -507,4 +521,19 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         return get_called_class();
     }
 
+    public function get_form() {
+        $Form = new BaseModelForm(
+            $model=get_class($this),
+            $fields=$this->form_fields,
+            $object_id=$this->id);
+        return $Form->render();
+    }
+
+    public function get_field_verbose_name($field_name) {
+        if (isset($this->fields[$field_name]['verbose_name'])) {
+            return Translation::translate($this->fields[$field_name]['verbose_name']);
+        } else {
+            return Translation::translate(ucfirst($field_name));
+        }
+    }
 }

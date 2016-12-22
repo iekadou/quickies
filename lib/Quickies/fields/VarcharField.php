@@ -11,14 +11,18 @@ class VarcharField extends Field {
                 return false;
             }
         }
-        if (isset($obj->fields[$field_name]['max_length'])) {
-            if (strlen($value) > $obj->fields[$field_name]['max_length']) {
-                return false;
+        if ((!isset($value) || $value == '') && isset($obj->fields[$field_name]['required']) && $obj->fields[$field_name]['required']) {
+            return false;
+        } else {
+            if (isset($obj->fields[$field_name]['max_length'])) {
+                if (strlen($value) > $obj->fields[$field_name]['max_length']) {
+                    return false;
+                }
             }
-        }
-        if (isset($obj->fields[$field_name]['min_length'])) {
-            if (strlen($value) < $obj->fields[$field_name]['min_length']) {
-                return false;
+            if (isset($obj->fields[$field_name]['min_length'])) {
+                if (strlen($value) < $obj->fields[$field_name]['min_length']) {
+                    return false;
+                }
             }
         }
         return true;

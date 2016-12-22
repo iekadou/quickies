@@ -35,7 +35,7 @@ class User extends BaseModel
 
     public function set_new_password($password)
     {
-        $password = $this->db_connection->real_escape_string(htmlentities($password, ENT_QUOTES));
+        $password = $this->db_connection->real_escape_string($password);
         $hashed = password_hash($password, PASSWORD_DEFAULT);
         $this->password = $hashed;
         return $this;

@@ -17,7 +17,7 @@
     }
 
     $ApiView = new ApiView(
-        $serializer = _i(UserSerializer::_cn)
+        $serializer = new UserSerializer()
     );
     $result = $ApiView->render();
     echo $result;

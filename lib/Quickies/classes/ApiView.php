@@ -39,6 +39,7 @@ class ApiView
                     if (!self::$serializer->serializer_instance_id) {
                         $instance = self::$serializer->model->interpret_request($_POST, $_FILES, $writable_fields);
                         $instance = $instance->create();
+                        return json_encode(self::$serializer->serialize($instance));
                     }
                     break;
                 case "PUT":
@@ -61,6 +62,7 @@ class ApiView
                             die();
                         }
                         $instance->delete();
+                        self::$serializer->serializer_instance_id = null;
                         return json_encode(self::$serializer->serialize($instance));
                     }
                     break;
