@@ -272,13 +272,13 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                     $update_str .= ", ";
                 }
                 $i++;
-                $update_str .= $field_name . " = '" . $this->$field_name . "'";
+                $update_str .= $field_name . " = '" . $this->db_connection->real_escape_string($this->$field_name) . "'";
             }
         }
         if (!empty($this->errors)) {
             throw new ValidationError($this->errors);
         }
-        $obj_query = $this->db_connection->query("UPDATE ".$this->table." set ".$this->db_connection->real_escape_string($update_str)." WHERE id = '" . $this->id . "';");
+        $obj_query = $this->db_connection->query("UPDATE ".$this->table." set ".$update_str." WHERE id = '" . $this->id . "';");
         if ($obj_query) {
             return $this;
         }
