@@ -13,21 +13,18 @@ class ValidationError extends \Exception
     }
 
     public function stringify() {
+        header("HTTP/1.0 400 Not Found");
         if (empty($this->errors)) {
             return '{"error_msgs": [{"title": "'.Translation::translate('Sorry!').'", "message": "'.Translation::translate('Something went wrong!').'"}]}';
         }
-        $error_output = "{";
+        $error_output = array();
         foreach ($this->errors as $error) {
-            if ($error_output != "{") {
-                $error_output .= ",";
-            }
             if (is_array($error) == true) {
-                $error_output .= '"'.$error[0].'": '.$error[1].'';
+                $error_output[$error[0]] = $error[1];
             } else {
-                $error_output .= '"'.$error.'": "error"';
+                $error_output[$error] = "error";
             }
         }
-        $error_output .= "}";
-        return $error_output;
+        return json_encode($error_output);
     }
 }

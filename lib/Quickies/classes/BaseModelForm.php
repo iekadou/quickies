@@ -37,7 +37,7 @@ class BaseModelForm extends Renderable {
         $this->object_id = $object_id;
     }
 
-    public function render($display=false) {
+    public function get_form_fields() {
         $render_fields = array();
         if (isset($this->object_id)) {
             $obj = _i($this->model)->get($this->object_id);
@@ -46,9 +46,24 @@ class BaseModelForm extends Renderable {
         }
         foreach($this->fields as $field_name) {
             if (isset($obj->fields[$field_name])) {
-                $render_fields[$field_name]['opts'] =$obj->fields[$field_name];
+                $render_fields[$field_name]['opts'] = $obj->fields[$field_name];
                 if ($obj->id) {
                     $render_fields[$field_name]['value'] = $obj->$field_name;
+                }
+                if (isset($render_fields[$field_name]['opts']['dependent_on'])) {
+                    if (empty($render_fields[$field_name]['opts']['dependent_on'])) {
+                        $render_fields[$field_name]['opts']['dependent_status'] = True;
+                    }
+                    elseif (empty($render_fields[$field_name]['dependent_value']) && !empty($render_fields[$field_name]['value'])) {
+                        $render_fields[$field_name]['opts']['dependent_status'] = True;
+                    }
+                    elseif (!empty($render_fields[$field_name]['opts']['dependent_value']) && $render_fields[$field_name]['value'] == $render_fields[$field_name]['opts']['dependent_value']) {
+                        $render_fields[$field_name]['opts']['dependent_status'] = True;
+                    } else {
+                        $render_fields[$field_name]['opts']['dependent_status'] = False;
+                    }
+                } else {
+                    $render_fields[$field_name]['opts']['dependent_status'] = True;
                 }
                 if ($obj->fields[$field_name]['type'] == IntegerChoiceField::_cn) {
                     $render_fields[$field_name]['choices'] = _i($obj->fields[$field_name]['choices'])->get_values();
@@ -64,6 +79,11 @@ class BaseModelForm extends Renderable {
                 $render_fields[$field_name]['opts']['verbose_name'] = $obj->get_field_verbose_name($field_name);
             }
         }
+        return $render_fields;
+    }
+
+    public function render($display=false) {
+        $render_fields = $this->get_form_fields();
         $this->set_template_var('render_fields', $render_fields);
         $this->pre_render();
         if ($display) {

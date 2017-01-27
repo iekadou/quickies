@@ -7,11 +7,15 @@ class IntegerChoiceField extends Field
 
     public function _set($obj, $field_name, $value)
     {
+        if (isset($obj->fields[$field_name]['choices'])) {
         $choices = _i($obj->fields[$field_name]['choices']);
         if ($choices->get_by_id($value)) {
             $obj->$field_name = $value;
         } else {
             $obj->errors[] = $field_name;
+        }
+        } else {
+            $obj->$field_name = $value;
         }
         return $obj;
     }

@@ -20,7 +20,7 @@ abstract class BaseModel
         $this->_pre_construct();
         global $DB_CONNECTOR;
         if (!isset($DB_CONNECTOR)) {
-            $DB_CONNECTOR = _i(DBConnector::_cn);
+            $DB_CONNECTOR = new DBConnector();
         }
         $this->db_connection = $DB_CONNECTOR;
         if ($this->db_connection->get_connect_errno()) {
@@ -33,13 +33,13 @@ abstract class BaseModel
                 $this->data[$field_name] = "";
             }
         }
+        $this->data['deleted_files'] = array();
     }
 
     public function __isset($field_name) {
         return $field_name == '_cn' || isset($this->id) || isset($this->data[$field_name]) || isset($this->data[$field_name.'_id']) || method_exists($this, 'get_'.$field_name) ||
             ((strpos($field_name, '_display') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_display'))])) ||
-            ((strpos($field_name, '_filename') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_filename'))])) ||
-            ((strpos($field_name, '_filetype') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_filetype'))]));
+            ((strpos($field_name, '_file_list') > 0) && isset($this->data[substr($field_name, 0, strpos($field_name, '_file_list'))]));
     }
 
     public function __get($field_name) {
@@ -55,7 +55,11 @@ abstract class BaseModel
                 return $this->$method_name();
             }
             $field = $this->fields[$field_name]['type'];
-            $field = new $field($this->fields[$field_name]);
+            if ($field == "Text") {
+                return;
+            } else {
+                $field = new $field($this->fields[$field_name]);
+            }
             return $field->_get($this, $field_name);
         } else if ($field_name == in_array($field_name.'_id', array_keys($this->fields))) {
             $field_name .= '_id';
@@ -71,12 +75,19 @@ abstract class BaseModel
             $field_name = substr($field_name, 0, strpos($field_name, '_display'));
             $choices = $this->fields[$field_name]['choices'];
             return $choices::get_by_id($this->$field_name)[1];
-        } else if (strpos($field_name, '_filename') > 0) {
-            $field_name = substr($field_name, 0, strpos($field_name, '_filename'));
-            return basename($this->$field_name);
-        } else if (strpos($field_name, '_filetype') > 0) {
-            $field_name = substr($field_name, 0, strpos($field_name, '_filetype'));
-            return Utils::getMimeType(PATH.$this->$field_name);
+        } else if (strpos($field_name, '_file_list') > 0) {
+            $field_name = substr($field_name, 0, strpos($field_name, '_file_list'));
+            $files = preg_split('/;/', $this->$field_name);
+            if ($files[0] == '') {
+                return array();
+            }
+            $result = array();
+            foreach ($files as $file) {
+                $re = '/\[(?P<file>[\s\S]+)\](?P<path>[\s\S]+)/';
+                preg_match($re, $file, $matches);
+                $result[] = array("file" => $matches['file'], "path" => $matches['path']);
+            }
+            return $result;
         } else {
             return $this->$field_name;
         }
@@ -91,8 +102,10 @@ abstract class BaseModel
                     return $this->$method_name($value);
                 }
                 $field = $this->fields[$field_name]['type'];
-                $field = new $field($this->fields[$field_name]);
-                $field->_set($this, $field_name, $value);
+                if ($field != "Text") {
+                    $field = new $field($this->fields[$field_name]);
+                    $field->_set($this, $field_name, $value);
+                }
                 return $this;
             } else {
                 $this->$field_name = $value;
@@ -280,6 +293,14 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         }
         $obj_query = $this->db_connection->query("UPDATE ".$this->table." set ".$update_str." WHERE id = '" . $this->id . "';");
         if ($obj_query) {
+            if (isset($this->data['deleted_files'])) {
+                foreach ($this->data['deleted_files'] as $deleted_file) {
+                    if (file_exists($deleted_file)) {
+                        unlink($deleted_file);
+                    }
+                }
+                $this->data['deleted_files'] = array();
+            }
             return $this;
         }
         return false;
@@ -522,21 +543,82 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $this->reset_errors();
         foreach($this->fields as $field_name => $field) {
             if (!$fields || in_array($field_name, $fields)) {
-                if (isset($POST[$field_name]) && $this->fields[$field_name]['type'] != FileField::_cn) {
-                    $this->$field_name = $POST[$field_name];
-                } elseif (isset($FILES[$field_name]) && $this->fields[$field_name]['type'] == FileField::_cn) {
-                    $ext = pathinfo($FILES[$field_name]['name'], PATHINFO_EXTENSION);
-                    $i = 0;
-                    $uploadfile = UPLOADDIR.md5(basename($FILES[$field_name]['name'])+$i).".".$ext;
-                    while (file_exists(PATH.$uploadfile)) {
-                        $i++;
-                        $uploadfile = UPLOADDIR.md5(basename($FILES[$field_name]['name'])+$i).".".$ext;
+                if (isset($POST[$field_name])) {
+                    if ($this->fields[$field_name]['type'] != FileField::_cn) {
+                        $this->$field_name = $POST[$field_name];
+                    } else {
+                        $files_str = "";
+                        if (is_array($POST[$field_name])) {
+                            $delete_files = $POST[$field_name];
+                            $get_name = $field_name.'_file_list';
+                            $file_list = $this->$get_name;
+                            foreach($file_list as $file) {
+                                $found = false;
+                                foreach($delete_files as $delete_file) {
+                                    if ($file['path'] == $delete_file) {
+                                        $found = true;
+                                    }
+                                }
+                                if (!$found) {
+                                    if (!Utils::endsWith($files_str, ";") && $files_str != "") {
+                                        $files_str .= ";";
+                                    }
+                                    $files_str .= "[" . $file['file'] . "]" . $file['path'];
+                                } else {
+                                    if (file_exists(PATH.$file['path'])) {
+                                        $this->data['deleted_files'][] = PATH.$file['path'];
+                                    }
+                                }
+                            }
+                        }
+                        $this->$field_name = $files_str;
                     }
-                    if (move_uploaded_file($FILES[$field_name]['tmp_name'], PATH.$uploadfile)) {
-                        $this->$field_name = $uploadfile;
+                } elseif (isset($FILES[$field_name]) && $this->fields[$field_name]['type'] == FileField::_cn) {
+                    $file_field = $FILES[$field_name];
+                    if (is_array($file_field['name'])) {
+                        $files = array();
+                        $i = 0;
+                        while ($i < sizeof($file_field['name'])) {
+                            if ($file_field['tmp_name'][$i] != "" && $file_field['error'][$i] == 0) {
+                                $files[] = array("name" => $file_field['name'][$i], "tmp_name" => $file_field['tmp_name'][$i], "type" => $file_field['type'][$i], "error" => $file_field['error'][$i], "size" => $file_field['size'][$i]);
+                            }
+                            $i++;
+                        }
+                    } else {
+                        $files = array(array("name" => $file_field['name'], "tmp_name" => $file_field['tmp_name'], "type" => $file_field['type'], "error" => $file_field['error'], "size" => $file_field['size']));
+                    }
+                    $result = $this->$field_name;
+                    foreach($files as $file) {
+                        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+                        $basename = pathinfo($file['name'], PATHINFO_BASENAME);
+                        $i = 0;
+                        $uploadfile = UPLOADDIR.md5(basename($file['name'])+$i).".".$ext;
+                        while (file_exists(PATH.$uploadfile)) {
+                            $i++;
+                            $uploadfile = UPLOADDIR.md5(basename($file['name'])+$i).".".$ext;
+                        }
+                        if (isset($this->fields[$field_name]['allowed_file_types'])) {
+                            preg_split('/;/', $this->fields[$field_name]['allowed_file_types']);
+
+                            if (mime_content_type($file['tmp_name']) != image/gif) {
+
+                            }
+                        }
+                        if (move_uploaded_file($file['tmp_name'], PATH.$uploadfile)) {
+                            if (!Utils::endsWith($result, ";") && $result != "") {
+                                $result .= ";";
+                            }
+                            $result .= '['.$basename.']'.$uploadfile;
+                        }
+                        if (file_exists($file['tmp_name'])) {
+                            unlink($file['tmp_name']);
+                        }
+                    }
+                    if ($result != "") {
+                        $this->$field_name = $result;
                     }
                 } else {
-                    $this->$field_name = null;
+//                    $this->$field_name = null;
                 }
             }
         }
@@ -548,6 +630,14 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
 
     public static function _cn() {
         return get_called_class();
+    }
+
+    public function get_form_fields() {
+        $Form = new BaseModelForm(
+            $model=get_class($this),
+            $fields=$this->form_fields,
+            $object_id=$this->id);
+        return $Form->get_form_fields();
     }
 
     public function get_form() {

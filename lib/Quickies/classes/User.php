@@ -90,9 +90,9 @@ class User extends BaseModel
 you can activate your account by clicking the following link:
 http://{{ DOMAIN }}{{ activate_url }}
 
-Have fun on {{ SITE_NAME }}", array('{{ username }}' => $this->get_username(), '{{ activation_key }}' => $this->get_activation_key(), '{{ SITE_NAME }}' => SITE_NAME, '{{ DOMAIN }}' => DOMAIN, '{{ activate_url }}' => UrlsPy::get_url('activate', array($this->get_activation_key(),))));
+Have fun on {{ SITE_NAME }}", array('{{ username }}' => $this->username, '{{ activation_key }}' => $this->activation_key, '{{ SITE_NAME }}' => SITE_NAME, '{{ DOMAIN }}' => DOMAIN, '{{ activate_url }}' => UrlsPy::get_url('activate', array($this->activation_key,))));
         $header = 'From: '.NO_REPLY_EMAIL;
-        if (mail($this->get_email(), $subject, $content, $header)) {
+        if (mail($this->email, $subject, $content, $header)) {
             return $this;
         } else {
             throw new ValidationError(array());
