@@ -73,7 +73,7 @@ abstract class BaseModel
             return _i($this->fields[$field_name]['foreign_type'])->get($id);
         } else if (strpos($field_name, '_display') > 0) {
             $field_name = substr($field_name, 0, strpos($field_name, '_display'));
-            $choices = $this->fields[$field_name]['choices'];
+            $choices = _i($this->fields[$field_name]['choices']);
             return $choices::get_by_id($this->$field_name)[1];
         } else if (strpos($field_name, '_file_list') > 0) {
             $field_name = substr($field_name, 0, strpos($field_name, '_file_list'));
