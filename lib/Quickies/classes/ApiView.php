@@ -49,7 +49,13 @@ class ApiView
                             Utils::raise404_api();
                             die();
                         }
-                        $instance = $instance->interpret_request($_POST, $_FILES, $writable_fields);
+                        $POST = $_POST;
+                        foreach (self::$serializer->fields as $field) {
+                            if ($instance->fields[$field]['type'] == BooleanField::_cn && !in_array($field, self::$serializer->read_only_fields) && !isset($POST[$field])) {
+                                $POST[$field] = false;
+                            }
+                        }
+                        $instance = $instance->interpret_request($POST, $_FILES, $writable_fields);
                         $instance = $instance->save();
                         return json_encode(self::$serializer->serialize($instance));
                     }
