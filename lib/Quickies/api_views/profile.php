@@ -8,7 +8,7 @@
         {
             global $UserClass;
             $this->model = _i($UserClass);
-            $this->fields = array('username', 'email', 'password', 'apnkey');
+            $this->fields = array('username', 'email', 'password');
             $this->filter_opts = array(array('id', '=', Account::get_user_id()));
             $this->allowed_methods = array('PUT');
             $this->write_only_fields = array('password');

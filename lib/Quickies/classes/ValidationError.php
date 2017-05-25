@@ -13,7 +13,7 @@ class ValidationError extends \Exception
     }
 
     public function stringify() {
-        header("HTTP/1.0 400 Not Found");
+        header("HTTP/1.0 400 Bad Request");
         if (empty($this->errors)) {
             return '{"error_msgs": [{"title": "'.Translation::translate('Sorry!').'", "message": "'.Translation::translate('Something went wrong!').'"}]}';
         }

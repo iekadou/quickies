@@ -8,7 +8,7 @@ class UserSerializer extends ApiSerializer {
     {
         global $UserClass;
         $this->model = _i($UserClass);
-        $this->fields = array('username', 'email', 'apnkey', 'activated', 'admin');
+        $this->fields = array('username', 'email', 'activated', 'admin');
         $this->filter_opts = array(array('id', '=', Account::get_user_id()));
         $this->allowed_methods = array('PUT');
     }
