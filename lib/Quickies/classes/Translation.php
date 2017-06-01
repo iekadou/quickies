@@ -6,28 +6,25 @@ class Translation
     const _cn = "Iekadou\\Quickies\\Translation";
 
     private static $languageDict = array();
+    public static $activateLanguage = DEFAULT_LANGUAGE;
     public function __construct() {
         if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-            $lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
-        } else {
-            $lang = "en";
+            Translation::$activateLanguage = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
         }
-        switch ($lang) {
-            case "de":
-                include(PATH."inc/language_de.php");
+        try {
+            try {
+                include(PATH . "inc/language_" . Translation::$activateLanguage . ".php");
                 Translation::$languageDict = $_;
                 unset($_);
-                break;
-            case "en":
-                include(PATH."inc/language_en.php");
+            } catch (\Exception $e) {
+                // user language is not available, fallback to default
+                Translation::$activateLanguage = DEFAULT_LANGUAGE;
+                include(PATH."inc/language_" . Translation::$activateLanguage . ".php");
                 Translation::$languageDict = $_;
                 unset($_);
-                break;
-            default:
-                include(PATH."inc/language_en.php");
-                Translation::$languageDict = $_;
-                unset($_);
-                break;
+            }
+        } catch (\Exception $e) {
+            // user and default language was found.
         }
     }
 
