@@ -7,7 +7,6 @@ class VarcharField extends Field {
     public function _validate($obj, $field_name, $value) {
         if (isset($obj->fields[$field_name]['regex'])) {
             if (!preg_match($obj->fields[$field_name]['regex'], $value)) {
-                $obj->errors[] = $field_name;
                 return false;
             }
         }

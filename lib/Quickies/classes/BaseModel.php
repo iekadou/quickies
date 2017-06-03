@@ -124,7 +124,7 @@ abstract class BaseModel
         foreach ($dir as $fileinfo) {
             if (!$fileinfo->isDot()) {
                 $filename = $fileinfo->getFilename();
-                $regex = "/^".$this->table."_[0-9].php$/";
+                $regex = "/^".$this->table."_([0-9])+.php$/";
                 if (preg_match($regex, $filename)) {
                     $version_number = substr($filename, strlen($this->table)+1, strlen($filename) - strlen($this->table) - strlen('.php')-1);
                     if ($version_number > $latest_migration) {
@@ -223,6 +223,8 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                     if (($field1['type'] == "Iekadou\\Quickies\\PasswordField" && $key == 'max_length') ||
                         ($field1['type'] == "Iekadou\\Quickies\\UrlField" && $key == 'max_length') ||
                         ($field1['type'] == VarcharField::_cn && $key == 'max_length') ||
+                        ($field1['type'] == TimestampField::_cn && $key == 'auto_create') ||
+                        ($field1['type'] == TimestampField::_cn && $key == 'auto_update') ||
                         ($field1['type'] == ForeignKeyField::_cn && $key == 'foreign_type') ||
                         ($field1['type'] == IntegerChoiceField::_cn && $key == 'choices') ||
                         $key == 'required' ||
@@ -280,6 +282,9 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             if ($field['type'] != ReflectedForeignKeyField::_cn && $field['type'] != ReflectedM2MField::_cn) {
                 if (!_i($this->fields[$field_name]['type'])->_validate_pre_db($this, $field_name)) {
                     $this->errors[] = $field_name;
+                }
+                if ($this->fields[$field_name]['type'] == TimestampField::_cn && isset($this->fields[$field_name]['auto_update']) && $this->fields[$field_name]['auto_update']) {
+                    $this->$field_name = time();
                 }
                 if ($i > 0) {
                     $update_str .= ", ";
@@ -614,9 +619,9 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                             unlink($file['tmp_name']);
                         }
                     }
-                    if ($result != "") {
-                        $this->$field_name = $result;
-                    }
+                    $this->$field_name = $result;
+                } elseif (!isset($FILES[$field_name]) && $this->fields[$field_name]['type'] == FileField::_cn) {
+                    $this->$field_name = "";
                 } else {
 //                    $this->$field_name = null;
                 }
