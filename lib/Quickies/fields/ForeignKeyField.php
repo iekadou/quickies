@@ -16,7 +16,7 @@ class ForeignKeyField extends Field {
 
     public function _validate_pre_db($obj, $field_name)
     {
-        if (!isset($obj->fields[$field_name]['required']) && $obj->$field_name == null) {
+        if (!isset($obj->fields[$field_name]['required']) || $obj->fields[$field_name]['required'] == false || $obj->$field_name != null) {
             return true;
         }
         if (Utils::endsWith($field_name, '_id')) {
