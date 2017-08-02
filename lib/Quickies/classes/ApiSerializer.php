@@ -57,7 +57,7 @@ class ApiSerializer
                             $value = null;
                         }
                     }
-                    if (is_array($value)) {
+                    if (is_array($value) && array_values($value) === $value) {
                         $array = array();
                         foreach($value as $item) {
                             if (is_object($item)) {
@@ -82,7 +82,7 @@ class ApiSerializer
         }
         return $return;
     }
-    
+
     public function has_instance_rights($instance) {
         return true;
     }

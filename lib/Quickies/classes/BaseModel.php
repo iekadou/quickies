@@ -164,7 +164,9 @@ abstract class BaseModel
         if ($latest_migration == 0) {
             array_push($query_parts, "CREATE TABLE `".$secrets['db_name']."`.`".$this->table."` (`id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY");
             foreach ($new_fields as $field_name => $field) {
-                array_push($query_parts, ", ".$this->_get_field_query($field_name, $field));
+                if ($this->_get_field_query($field_name, $field) != "") {
+                    array_push($query_parts, ", ".$this->_get_field_query($field_name, $field));
+                }
             }
             array_push($query_parts, ");");
         } else {
@@ -390,12 +392,12 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $condition_str = '';
         $i = 0;
         foreach($conditions as $condition) {
-            if ($i > 0) {
-                $condition_str .= ' and ';
-            } else {
-                $condition_str = "WHERE ";
-            }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
+                if ($i > 0) {
+                    $condition_str .= ' and ';
+                } else {
+                    $condition_str = "WHERE ";
+                }
                 $i++;
                 $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
@@ -415,12 +417,12 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $condition_str = '';
         $i = 0;
         foreach($conditions as $condition) {
-            if ($i > 0) {
-                $condition_str .= ' and ';
-            } else {
-                $condition_str = "WHERE ";
-            }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
+                if ($i > 0) {
+                    $condition_str .= ' and ';
+                } else {
+                    $condition_str = "WHERE ";
+                }
                 $i++;
                 $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
@@ -428,12 +430,12 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $order_str = '';
         $i = 0;
         foreach($sortings as $sorting) {
-            if ($i > 0) {
-                $order_str .= ', ';
-            } else {
-                $order_str = 'ORDER BY ';
-            }
             if ($sorting[0] == 'id' || in_array($sorting[0], array_keys($this->fields))) {
+                if ($i > 0) {
+                    $order_str .= ', ';
+                } else {
+                    $order_str = 'ORDER BY ';
+                }
                 $i++;
                 $order_str .= $sorting[0]." ".$sorting[1];
             }
@@ -449,12 +451,12 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $condition_str = '';
         $i = 0;
         foreach($conditions as $condition) {
-            if ($i > 0) {
-                $condition_str .= ' and ';
-            } else {
-                $condition_str = "WHERE ";
-            }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
+                if ($i > 0) {
+                    $condition_str .= ' and ';
+                } else {
+                    $condition_str = "WHERE ";
+                }
                 $i++;
                 $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
@@ -462,12 +464,12 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $order_str = '';
         $i = 0;
         foreach($sortings as $sorting) {
-            if ($i > 0) {
-                $order_str .= ', ';
-            } else {
-                $order_str = 'ORDER BY ';
-            }
             if ($sorting[0] == 'id' || in_array($sorting[0], array_keys($this->fields))) {
+                if ($i > 0) {
+                    $order_str .= ', ';
+                } else {
+                    $order_str = 'ORDER BY ';
+                }
                 $i++;
                 $order_str .= $sorting[0]." ".$sorting[1];
             }
@@ -496,12 +498,12 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $condition_str = '';
         $i = 0;
         foreach($conditions as $condition) {
-            if ($i > 0) {
-                $condition_str .= ' and ';
-            } else {
-                $condition_str = "WHERE ";
-            }
             if ($condition[0] == 'id' || in_array($condition[0], array_keys($this->fields))) {
+                if ($i > 0) {
+                    $condition_str .= ' and ';
+                } else {
+                    $condition_str = "WHERE ";
+                }
                 $i++;
                 $condition_str .= $condition[0]." ".$condition[1]." '".$this->db_connection->real_escape_string($condition[2])."'";
             }
@@ -509,12 +511,12 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
         $order_str = '';
         $i = 0;
         foreach($sortings as $sorting) {
-            if ($i > 0) {
-                $order_str .= ', ';
-            } else {
-                $order_str = 'ORDER BY ';
-            }
             if ($sorting[0] == 'id' || in_array($sorting[0], array_keys($this->fields))) {
+                if ($i > 0) {
+                    $order_str .= ', ';
+                } else {
+                    $order_str = 'ORDER BY ';
+                }
                 $i++;
                 $order_str .= $sorting[0]." ".$sorting[1];
             }
