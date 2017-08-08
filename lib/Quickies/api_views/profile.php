@@ -6,8 +6,7 @@
 
         public function __construct()
         {
-            global $UserClass;
-            $this->model = _i($UserClass);
+            $this->model = _i(USERCLASS);
             $this->fields = array('username', 'email', 'password');
             $this->filter_opts = array(array('id', '=', Account::get_user_id()));
             $this->allowed_methods = array('PUT');

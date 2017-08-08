@@ -6,7 +6,7 @@ A web framework for PHP based on django
 
 1. Install Composer
 
-For furhter information please read [https://getcomposer.org/doc/00-intro.md](https://getcomposer.org/doc/00-intro.md).
+For further information please read [https://getcomposer.org/doc/00-intro.md](https://getcomposer.org/doc/00-intro.md).
 
 2. Add Quickies to your composer.json:
 

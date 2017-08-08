@@ -3,7 +3,7 @@
     require_once("../../../../../../inc/include.php");
 
     try {
-        $User = new $UserClass();
+        $User = _i(USERCLASS);
         $errors = array();
         $identification = (isset($_POST['identification']) ? htmlspecialchars($_POST['identification']) : false);
         $referrer = (isset($_POST['referrer']) ? htmlspecialchars($_POST['referrer']) : false);

@@ -1,6 +1,6 @@
 {
     "name": "iekadou/quickies",
-    "version": "v0.0.1",
+    "version": "v0.0.2",
     "type": "library",
     "description": "Quickies - A web framework for PHP based on django",
     "keywords": ["web-framework"],
@@ -18,12 +18,7 @@
       "ircmaxell/password-compat": "dev-master",
       "twig/twig": "~1.0",
       "lare_team/twig_lare": ">=1.0.0",
-      "php": ">=5.3.3",
-      "phpmailer/phpmailer": "~5.2"
-    },
-    "require-dev": {
-        "symfony/phpunit-bridge": "~2.7",
-        "symfony/debug": "~2.7"
+      "php": ">=5.3.3"
     },
     "autoload": {
         "files": 
@@ -54,7 +49,6 @@
                 "lib/Quickies/classes/Globals.php",
                 "lib/Quickies/classes/Migration.php",
                 "lib/Quickies/classes/Pagination.php",
-                "lib/Quickies/classes/Renderable.php",
                 "lib/Quickies/classes/Settings.php",
                 "lib/Quickies/classes/Translation.php",
                 "lib/Quickies/classes/TwigTime.php",
@@ -69,7 +63,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.0.1-dev"
+            "dev-master": "0.0.2-dev"
         }
     }
 }

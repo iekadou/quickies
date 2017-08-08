@@ -6,8 +6,7 @@ class UserSerializer extends ApiSerializer {
 
     public function __construct()
     {
-        global $UserClass;
-        $this->model = _i($UserClass);
+        $this->model = _i(USERCLASS);
         $this->fields = array('username', 'email', 'password');
         $this->allowed_methods = array('POST');
     }

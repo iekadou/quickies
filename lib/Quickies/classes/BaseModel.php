@@ -119,6 +119,16 @@ abstract class BaseModel
         $new_fields = array();
         $del_fields = array();
         $change_fields = array();
+        $dir = new \DirectoryIterator(PATH.'vendor/iekadou/quickies/lib/Quickies/migrations/');
+        foreach ($dir as $fileinfo) {
+            if (!$fileinfo->isDot()) {
+                $filename = $fileinfo->getFilename();
+                if (!file_exists(PATH.'migrations/'.$filename)) {
+                    copy(PATH.'vendor/iekadou/quickies/lib/Quickies/migrations/'.$filename, PATH.'migrations/'.$filename);
+                }
+            }
+        }
+
         $dir = new \DirectoryIterator(PATH.'migrations/');
         $latest_migration = 0;
         foreach ($dir as $fileinfo) {

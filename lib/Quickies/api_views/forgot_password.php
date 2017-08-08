@@ -10,9 +10,9 @@
         if ($identification == false || $identification == '') {
             $errors[] = "identification";
         } else {
-            $login_user = _i($UserClass)->get_by(array(array('username', '=', $identification)));
+            $login_user = _i(USERCLASS)->get_by(array(array('username', '=', $identification)));
             if ($login_user == false) {
-                $login_user = _i($UserClass)->get_by(array(array('email', '=', $identification)));
+                $login_user = _i(USERCLASS)->get_by(array(array('email', '=', $identification)));
             }
             if ($login_user == false) {
                $errors[] = "identification";

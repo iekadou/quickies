@@ -77,8 +77,7 @@ class Account
         if (isset(Account::$user)) {
             return Account::$user;
         } else {
-            global $UserClass;
-            $User = _i($UserClass);
+            $User = _i(USERCLASS);
             Account::$user = $User->get(Account::get_user_id());
             return Account::$user;
         }
