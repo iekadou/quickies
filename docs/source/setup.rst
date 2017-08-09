@@ -24,9 +24,20 @@ For further information please read [https://getcomposer.org/doc/00-intro.md](ht
 .. code-block:: json
 
     {
+        "repositories": [
+            {
+                "type": "vcs",
+                "url":  "git@github.com:iekadou/quickies.git"
+            }
+        ],
         "require": {
-            "iekadou/quickies": ">=1.0.0",
+            "iekadou/quickies": ">=0.1.1",
+            "tinymce/tinymce": ">= 4"
+        },
+        "config": {
+            "bin-dir": "./"
         }
     }
+
 
 3. Run the migrations by opening ``/migrate/``

@@ -120,20 +120,56 @@ In Quickies it is the *.htaccess*.
     Header add Access-Control-Allow-Methods "PUT, GET, POST, DELETE, OPTIONS"
     Header add Access-Control-Allow-Credentials "true"
 
+    # prevent direct access to any file except static folder
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteCond %{REQUEST_URI} !^/static/.*$
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteRule (.*) / [R=404,L,NC]
+
     # deny direct access to views
     RewriteCond %{REQUEST_URI} ^/views/.*$
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule (.*) / [R=404,L,NC]
 
-
     # for URLS_PY append ###namespace### in line
     #URLS_PY START#
-
     RewriteRule ^$ views/index.php [L] ###home###
-    RewriteRule ^article/([^/\.]+)/?$ views/article.php?id=$1 [L] ###article###
+    RewriteRule ^activate/([^/\.]+)/?$ views/activate.php?activation_key=$1 [L] ###activate####
+    RewriteRule ^activate/$ views/activate.php [L] ###activate####
 
+    RewriteRule ^forgot-password/$ views/forgot_password.php [L] ###forgot_password###
+    RewriteRule ^logout/$ views/logout.php [L] ###logout###
+    RewriteRule ^login/$ views/login.php [L] ###login###
+    RewriteRule ^register/$ views/register.php [L] ###register###
 
+    # backend urls
+    RewriteRule ^account/$ views/account/index.php [L] ###account###
+    RewriteRule ^account/activate/$ views/account/activate.php [L] ###account:activate###
+    RewriteRule ^account/profile/$ views/account/profile.php [L] ###account:profile###
+    RewriteRule ^account/users/$ views/account/users.php [L] ###account:users###
+    RewriteRule ^account/user/([^/\.]+)/?$ views/account/user.php?id=$1 [L] ###account:user###
+
+    # api urls
+    RewriteRule ^api/account/activate/$ vendor/iekadou/quickies/lib/Quickies/api_views/activate.php [L] ###api:account:activate###
+    RewriteRule ^api/forgot-password/$ vendor/iekadou/quickies/lib/Quickies/api_views/forgot_password.php [L] ###api:forgot_password###
+    RewriteRule ^api/login/$ vendor/iekadou/quickies/lib/Quickies/api_views/login.php [L] ###api:login###
+    RewriteRule ^api/profile/$ vendor/iekadou/quickies/lib/Quickies/api_views/profile.php [L] ###api:profile###
+    RewriteRule ^api/register/$ vendor/iekadou/quickies/lib/Quickies/api_views/register.php [L] ###api:register###
+    RewriteRule ^api/user/$ vendor/iekadou/quickies/lib/Quickies/api_views/user.php [L] ###api:user###
+    RewriteRule ^api/user/([^/\.]+)/?$ vendor/iekadou/quickies/lib/Quickies/api_views/user.php?id=$1 [L] ###api:user###
+
+    # articles
+    RewriteRule ^api/article/$ api_views/article.php [L] ###api:article###
+    RewriteRule ^api/article/([^/\.]+)/?$ api_views/article.php?id=$1 [L] ###api:article###
+    RewriteRule ^articles/$ views/articles.php [L] ###articles####
+    RewriteRule ^article/([^/\.]+)/?$ views/article.php?slug=$1 [L] ###article###
+    RewriteRule ^account/articles/$ views/account/articles.php [L] ###account:articles###
+    RewriteRule ^account/article/([^/\.]+)/?$ views/account/article.php?id=$1 [L] ###account:article###
     #URLS_PY END#
+
+    # static/js/tinymce should link to vendor tinymce.
+    RewriteRule ^static/js/tinymce/(.*)$ vendor/tinymce/tinymce/$1 [L]
+
     # deny direct access to api
     RewriteCond %{REQUEST_URI} ^/api_views/*$
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
@@ -151,18 +187,24 @@ In Quickies it is the *.htaccess*.
     RewriteRule ^templates/.*$ - [R=404,L,NC]
     RewriteRule ^migrations/.*$ - [R=404,L,NC]
 
+    # appending trailing slash if no file found
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteRule ^(.*[^/])$ /$1/ [L,R]
+
     ErrorDocument 404 /views/_errors/404.php
+
 
 As you can see it looks a lot like a normal *.htaccess* file except for the comments. And they are the ones who do the
 magic.
 
-Let's look at the line ``RewriteRule ^$ views/index.php [L] ###home###``.
+Let's look at line *25* ``RewriteRule ^$ views/index.php [L] ###home###``.
 
 It defines that calling ``/`` will open the *views/index.php* as usually.
 Additionally it flags this endpoint with the name *home*.
 
 
-The same thing is done in the line ``RewriteRule ^article/([^/\.]+)/?$ views/article.php?id=$1 [L] ###article###``.
+The same thing is done in  line *33* ``RewriteRule ^article/([^/\.]+)/?$ views/article.php?id=$1 [L] ###article###``.
 Except that it has to be called with a paramenter, called in the View available as id.
 
 
@@ -203,17 +245,23 @@ So the example above simply renders the ``index.html``, a Twig template.
     <?php
     namespace Iekadou\Example;
     require_once("../inc/include.php");
+    use Iekadou\Quickies\Utils;
     use Iekadou\Quickies\View;
 
-    $id = (isset($_GET['id']) ? htmlspecialchars($_GET['id']) : false);
-    $article = _i(Article::_cn)->get($id);
 
-    $View = new View("article_".$article->id, $article->title, "article.html");
-    $View->set_template_var('article', $article);
+    $slug = (isset($_GET['slug']) ? htmlspecialchars($_GET['slug']) : false);
+
+    $Article = _i(Article::_cn)->get_by(array(array("slug", "=", $slug), array("public", "=", 1)));
+    if (!$Article) {
+        Utils::raise404();
+        die();
+    }
+    $View = new View($Article->slug, $Article->name, 'article.html');
+    $View->set_template_var('article', $Article);
     $View->render();
 
-This example could be a view to render an article specified by a id using the ``article.html`` template.
 
+This view renders an article specified by a slug using the ``article.html`` template.
 
 
 Models
