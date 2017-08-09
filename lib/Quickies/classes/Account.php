@@ -86,6 +86,7 @@ class Account
     public static function generate_remember_token($userid) {
         $remember_token = str_shuffle(MD5(microtime()));
         setcookie("remember_me", $remember_token, time() + 3600*24*365, '/');
+        _i(DBConnector::_cn)->query("DELETE FROM remember where `userid` = '".$userid."';");
         _i(DBConnector::_cn)->query("INSERT INTO remember (userid, token, expires) VALUES ('".$userid."', '".hash('sha256', $remember_token)."', '".(time()+3600*24*365)."');");
         return $remember_token;
     }

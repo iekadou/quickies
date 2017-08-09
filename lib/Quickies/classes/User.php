@@ -9,7 +9,7 @@ class User extends BaseModel
     protected $table = 'user';
     protected $fields = array(
         'username' => array('type' => VarcharField::_cn, 'regex' => "/^[a-zA-Z0-9 ]{3,50}$/", 'unique' => true, 'min_length' => 3, 'max_length' => 10),
-        'email' => array('type' => VarcharField::_cn, 'min_length' => 3, 'max_length' => 254),
+        'email' => array('type' => VarcharField::_cn, 'min_length' => 3, 'max_length' => 254, 'unique' => true),
         'password' => array('type' => VarcharField::_cn),
         'activated' => array('type' => BooleanField::_cn, 'default' => false),
         'activation_key' => array('type' => VarcharField::_cn, 'default' => '', 'max_length' => 254, 'min_length' => 3),
@@ -41,15 +41,13 @@ class User extends BaseModel
         return $this;
     }
 
-    public function register_new_user($username, $email, $password)
+    public function create()
     {
-        $this->email = $email;
-        $this->username = $username;
-        $this->password = $password;
-
         if (!isset($this->errors) || empty($this->errors)) {
-            if ($this->create()) {
-                $this->id = $this->db_connection->get_insert_id();
+            if ($this->count_by() == 0) {
+                $this->admin = True;
+            }
+            if (parent::create()) {
                 if ($this->send_activation_email()) {
                     return $this;
                 } else {
@@ -81,16 +79,19 @@ class User extends BaseModel
         }
         $this->activation_key = $activation_key;
     }
-    
+
     public function send_activation_email() {
         $this->generate_activation_key();
         $this->save();
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        $domain_name = $_SERVER['HTTP_HOST'];
+        $site_root_url = $protocol.$domain_name;
         $subject = Translation::translate('Your account at {{ SITE_NAME }}', array('{{ SITE_NAME }}' => SITE_NAME));
         $content = Translation::translate("Hey {{ username }},
 you can activate your account by clicking the following link:
-http://{{ DOMAIN }}{{ activate_url }}
+{{ SITE_ROOT_URL }}{{ activate_url }}
 
-Have fun on {{ SITE_NAME }}", array('{{ username }}' => $this->username, '{{ activation_key }}' => $this->activation_key, '{{ SITE_NAME }}' => SITE_NAME, '{{ DOMAIN }}' => DOMAIN, '{{ activate_url }}' => UrlsPy::get_url('activate', array($this->activation_key,))));
+Have fun on {{ SITE_NAME }}", array('{{ username }}' => $this->username, '{{ activation_key }}' => $this->activation_key, '{{ SITE_ROOT_URL }}' => $site_root_url, '{{ SITE_NAME }}' => SITE_NAME, '{{ activate_url }}' => UrlsPy::get_url('activate', array($this->activation_key,))));
         $header = 'From: '.NO_REPLY_EMAIL;
         if (mail($this->email, $subject, $content, $header)) {
             return $this;
@@ -98,7 +99,7 @@ Have fun on {{ SITE_NAME }}", array('{{ username }}' => $this->username, '{{ act
             throw new ValidationError(array());
         }
     }
-    
+
     public function send_new_password() {
 
         $new_password = '';
@@ -113,7 +114,7 @@ Have fun on {{ SITE_NAME }}", array('{{ username }}' => $this->username, '{{ act
             }
             $new_password .= $char;
         }
-        
+
         $subject = Translation::translate('Your new password at {{ SITE_NAME }}', array('{{ SITE_NAME }}' => SITE_NAME));
         $content = Translation::translate('Hey {{ username }},
 your new password is: {{ new_password }}

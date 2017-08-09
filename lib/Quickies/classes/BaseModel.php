@@ -421,7 +421,7 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
 
     }
 
-    public function count_by($conditions, $sortings=array())
+    public function count_by($conditions=array(), $sortings=array())
     {
         $this->reset_errors();
         $condition_str = '';
