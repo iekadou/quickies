@@ -40,4 +40,8 @@ For further information please read [https://getcomposer.org/doc/00-intro.md](ht
     }
 
 
-3. Run the migrations by opening ``/migrate/``
+3. ``composer install``
+
+4. ``php quicky makemigrations``
+
+5. ``php quicky migrate``
