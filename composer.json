@@ -67,7 +67,6 @@
         }
     },
     "bin": [
-        "quicky"
-    ],
-    "bin-dir": "./"
+        "lib/Quickies/bin/quicky"
+    ]
 }

@@ -1,0 +1,26 @@
+<?php
+namespace Iekadou\Quickies;
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+define('PATH', getcwd().'/');
+require_once(PATH."vendor/iekadou/quickies/lib/Quickies/utils/include.php");
+
+switch($argv[1]) {
+    case 'makemigrations':
+        foreach(Utils::getSubclassesOf("Iekadou\\Quickies\\BaseModel") as $class) {
+            if (USERCLASS == $class || $class != "Iekadou\\Quickies\\User") {
+                _i($class)->makemigrations();
+            }
+        }
+        print "All ok!"."\n";
+        break;
+    case 'migrate':
+        Migration::init();
+        break;
+    default:
+        print "Usage (one of below):"."\n";
+        print "php quicky makemigrations"."\n";
+        print "php quicky migrate"."\n";
+}
