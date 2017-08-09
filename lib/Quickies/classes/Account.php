@@ -20,8 +20,10 @@ class Account
         if (isset($_COOKIE['remember_me'])) {
             Account::remember_user($_COOKIE['remember_me']);
         }
-        if (isset(getallheaders()['APNKEY'])) {
-            Account::api_user(getallheaders()['APNKEY']);
+        if (function_exists('getallheaders')) {
+            if (isset(getallheaders()['APNKEY'])) {
+                Account::api_user(getallheaders()['APNKEY']);
+            }
         }
     }
 

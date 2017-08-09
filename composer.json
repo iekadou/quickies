@@ -65,5 +65,8 @@
         "branch-alias": {
             "dev-master": "0.0.2-dev"
         }
-    }
+    },
+    "bin": [
+        "quicky"
+    ]
 }

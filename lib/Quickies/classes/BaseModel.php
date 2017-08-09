@@ -199,7 +199,6 @@ abstract class BaseModel
         unset($secrets);
 
         if (empty($new_fields) && empty($del_fields) && empty($change_fields)) {
-            echo "Nothing to migrate at: ".$this->table.'<br>';
         } else {
             $complete_query = "";
             foreach ($query_parts as $part) {
@@ -212,7 +211,7 @@ $migration[\'id\']  =  "' . $this->table . '_' . $current_migration . '";
 $migration[\'query\'] = "' . $complete_query . '";
 $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
             file_put_contents($current_migration_filename, $string);
-            echo "Migrations created at: ".$this->table.'<br>';
+            print "Migrations created at: ".$this->table."\n";
         }
     }
 
