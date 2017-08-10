@@ -1,6 +1,6 @@
 <?php
     namespace Iekadou\Quickies;
-    require_once("../../../../../../inc/include.php");
+    require_once(getenv('INCLUDE_PHP_PATH'));
 
     class UserSerializer extends ApiSerializer {
 

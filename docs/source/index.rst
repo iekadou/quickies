@@ -6,7 +6,11 @@
 Welcome to Quickies's documentation!
 ====================================
 
+.. important::
+   Please note that Quickies is still in development and not stable in any way.
+
 Contents:
+---------
 
 .. toctree::
    :maxdepth: 2

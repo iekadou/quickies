@@ -1,6 +1,6 @@
 {
     "name": "iekadou/quickies",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "type": "library",
     "description": "Quickies - A web framework for PHP based on django",
     "keywords": ["web-framework"],

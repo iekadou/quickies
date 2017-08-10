@@ -1,37 +1,21 @@
 .. _setup:
 
-===============
-Getting Started
-===============
-
-These instructions cover how to get a working copy of the source code.
-
-
-How to install
-==============
-
-Composer
----------
-
-The preferred way to use Quickies is to use Composer:
+How to install Quickies?
+========================
 
 1. Install Composer
+-------------------
 
 For further information please read [https://getcomposer.org/doc/00-intro.md](https://getcomposer.org/doc/00-intro.md).
 
-2. Add Quickies to your composer.json:
+2. Add Quickies to your composer.json
+-------------------------------------
 
 .. code-block:: json
 
     {
-        "repositories": [
-            {
-                "type": "vcs",
-                "url":  "git@github.com:iekadou/quickies.git"
-            }
-        ],
         "require": {
-            "iekadou/quickies": ">=0.1.1",
+            "iekadou/quickies": ">=0.1.2",
             "tinymce/tinymce": ">= 4"
         },
         "config": {
@@ -39,9 +23,18 @@ For further information please read [https://getcomposer.org/doc/00-intro.md](ht
         }
     }
 
+3. Install Packages
+-------------------
 
-3. ``composer install``
+To install the required packages just run the following command:
 
-4. ``php quicky makemigrations``
+.. code-block:: bash
 
-5. ``php quicky migrate``
+    $ composer install
+
+Example
+-------
+
+We provide a simple example project at [https://github.com/iekadou/quickies-example](https://github.com/iekadou/quickies-example).
+
+All important features are used there.

@@ -18,7 +18,7 @@ This file is the main entry point of your project.
     :linenos:
 
     <?php
-    define('PATH', $_SERVER['DOCUMENT_ROOT'].'/');
+    define('PATH', dirname(dirname(__FILE__)) . '/');
     require_once(PATH."/vendor/iekadou/quickies/lib/Quickies/utils/include.php");
 
 Typically this file has exactly this content. PATH should be defined to the root directory and the include.php should be
@@ -192,6 +192,10 @@ In Quickies it is the *.htaccess*.
     RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteRule ^(.*[^/])$ /$1/ [L,R]
 
+    # setting INCLUDE_PHP_PATH to prevent too relative paths
+    RewriteCond $0#%{REQUEST_URI} ([^#]*)#(.*?)/?\1$
+    RewriteRule ^.*$ - [E=INCLUDE_PHP_PATH:%{DOCUMENT_ROOT}%2/inc/include.php]
+
     ErrorDocument 404 /views/_errors/404.php
 
 
@@ -204,7 +208,7 @@ It defines that calling ``/`` will open the *views/index.php* as usually.
 Additionally it flags this endpoint with the name *home*.
 
 
-The same thing is done in  line *33* ``RewriteRule ^article/([^/\.]+)/?$ views/article.php?id=$1 [L] ###article###``.
+The same thing is done in  line *54* ``RewriteRule ^article/([^/\.]+)/?$ views/article.php?slug=$1 [L] ###article###``.
 Except that it has to be called with a paramenter, called in the View available as id.
 
 
@@ -220,7 +224,7 @@ Let's start with a very basic example.
 
     <?php
     namespace Iekadou\Example;
-    require_once("../inc/include.php");
+    require_once(getenv('INCLUDE_PHP_PATH'));
     use Iekadou\Quickies\Translation;
     use Iekadou\Quickies\View;
 
@@ -244,7 +248,7 @@ So the example above simply renders the ``index.html``, a Twig template.
 
     <?php
     namespace Iekadou\Example;
-    require_once("../inc/include.php");
+    require_once(getenv('INCLUDE_PHP_PATH'));
     use Iekadou\Quickies\Utils;
     use Iekadou\Quickies\View;
 
@@ -392,15 +396,12 @@ Migrations
 As Models are created or changed, the database should change the same way.
 
 Those changes are saved in *Migrations*.
-After you defined a Model and include the Class in include.php you simply run the makemigrations endpoint to generate
-your migrations. After the generation you can apply the migrations on the databse using the migrate endpoint.
 
-In the default ``.htaccess`` the endpoints are defined like this:
+After you defined a Model, simply run the *makemigrations* command to detect changes and *migrate* to apply them to the
+database.
 
-.. code-block:: apache
+.. code-block:: bash
     :linenos:
 
-    RewriteRule ^migrate/$ vendor/iekadou/quickies/lib/Quickies/views/migrate.php [L] ###migrate###
-    RewriteRule ^makemigrations/$ vendor/iekadou/quickies/lib/Quickies/views/makemigrations.php [L] ###makemigrations###
-
-So calling ``/makemigrations/`` and ``/migrate/`` will do the work.
+    $ php quicky makemigrations
+    $ php quicky migrate

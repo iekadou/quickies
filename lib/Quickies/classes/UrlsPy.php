@@ -49,16 +49,22 @@ class UrlsPy {
 
     public static function get_url($name, $args=array()) {
         $arg_count = sizeof($args);
+
+        $relative_url = '';
+        if (defined('RELATIVE_URL')) {
+            $relative_url = RELATIVE_URL;
+        }
+
         if (isset(UrlsPy::$patterns[$name])) {
             if (is_array(UrlsPy::$patterns[$name])) {
                 foreach(UrlsPy::$patterns[$name] as $url) {
                     if (preg_match_all('/%s/', $url, $matches) == $arg_count) {
-                        return vsprintf($url, $args);
+                        return vsprintf($relative_url.$url, $args);
                     }
                 }
             } else {
                 if (preg_match_all('/%s/', UrlsPy::$patterns[$name], $matches) == $arg_count) {
-                    return vsprintf(UrlsPy::$patterns[$name], $args);
+                    return vsprintf($relative_url.UrlsPy::$patterns[$name], $args);
                 }
             }
         }

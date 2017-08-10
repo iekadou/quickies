@@ -2,6 +2,12 @@
 namespace Iekadou\Quickies;
 require_once("instantiate.php");
 
+$RELATIVE_PATH = str_replace($_SERVER['DOCUMENT_ROOT'], "", PATH);
+if (substr($RELATIVE_PATH, -1) == '/') {
+    $RELATIVE_PATH = substr($RELATIVE_PATH, 0, strlen($RELATIVE_PATH)-1);
+}
+define('RELATIVE_URL', $RELATIVE_PATH);
+
 date_default_timezone_set('Europe/Berlin');
 
 $RENDERING_START = microtime(true);
@@ -28,5 +34,7 @@ Globals::set_var('Account', new Account());
 Globals::set_var('SITE_NAME', SITE_NAME);
 Globals::set_var('DOMAIN', DOMAIN);
 Globals::set_var('LANG', Translation::$activateLanguage);
+Globals::set_var('RELATIVE_URL', $RELATIVE_PATH);
+Globals::set_var('STATIC_URL', $RELATIVE_PATH.'/static/');
 
 $INIT_LOADED = true;
