@@ -7,7 +7,7 @@ class UserSerializer extends ApiSerializer {
     public function __construct()
     {
         $this->model = _i(USERCLASS);
-        $this->fields = array('username', 'email', 'activated', 'admin');
+        $this->fields = _i(USERCLASS)->form_fields;
         $this->filter_opts = array(array('id', '=', Account::get_user_id()));
         $this->allowed_methods = array('PUT');
     }

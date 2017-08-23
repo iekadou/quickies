@@ -8,7 +8,7 @@ class User extends BaseModel
 
     protected $table = 'user';
     protected $fields = array(
-        'username' => array('type' => VarcharField::_cn, 'regex' => "/^[a-zA-Z0-9 ]{3,50}$/", 'unique' => true, 'min_length' => 3, 'max_length' => 10),
+        'username' => array('type' => VarcharField::_cn, 'regex' => "/^[a-zA-Z0-9 ]{3,50}$/", 'unique' => true, 'min_length' => 3, 'max_length' => 32),
         'email' => array('type' => VarcharField::_cn, 'min_length' => 3, 'max_length' => 254, 'unique' => true),
         'password' => array('type' => VarcharField::_cn),
         'activated' => array('type' => BooleanField::_cn, 'default' => false),
@@ -16,6 +16,8 @@ class User extends BaseModel
         'admin' => array('type' => BooleanField::_cn, 'default' => false)
     );
     protected $custom_fields = array();
+
+    public $form_fields = array('username', 'email', 'activated', 'admin');
 
     protected function _pre_construct() {
         foreach($this->custom_fields as $custom_field_name => $custom_field) {

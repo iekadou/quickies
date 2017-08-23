@@ -13,7 +13,7 @@ For further information please read [https://getcomposer.org/doc/00-intro.md](ht
 	```json
     {
         "require": {
-            "iekadou/quickies": ">=0.1.2",
+            "iekadou/quickies": ">=0.1.3",
             "tinymce/tinymce": ">= 4"
         },
         "config": {

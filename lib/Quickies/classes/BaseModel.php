@@ -301,7 +301,11 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                     $update_str .= ", ";
                 }
                 $i++;
-                $update_str .= $field_name . " = '" . $this->db_connection->real_escape_string($this->$field_name) . "'";
+                if ($this->fields[$field_name]['type'] == BooleanField::_cn) {
+                    $update_str .= $field_name . " = '" . ($this->$field_name ? 1 : 0) . "'";
+                } else {
+                    $update_str .= $field_name . " = '" . $this->db_connection->real_escape_string($this->$field_name) . "'";
+                }
             }
         }
         if (!empty($this->errors)) {
@@ -353,7 +357,11 @@ $migration[\'fields\'] = ' . var_export($this->fields, true) . ';';
                 if (!isset($this->$field_name)) {
                     $this->$field_name = '';
                 }
-                $insert_str .= "'".$this->db_connection->real_escape_string($this->$field_name )."'";
+                if ($this->fields[$field_name]['type'] == BooleanField::_cn) {
+                    $insert_str .= "'".($this->$field_name ? 1 : 0)."'";
+                } else {
+                    $insert_str .= "'".$this->db_connection->real_escape_string($this->$field_name )."'";
+                }
             }
         }
 
