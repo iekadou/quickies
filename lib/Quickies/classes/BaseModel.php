@@ -9,6 +9,7 @@ abstract class BaseModel
     protected $db_connection = null;
     protected $id = null;
     protected $fields = array();
+    protected $cached_fields = array();
     public $errors = null;
 
     protected function _pre_construct()
@@ -61,7 +62,7 @@ abstract class BaseModel
                 $field = new $field($this->fields[$field_name]);
             }
             return $field->_get($this, $field_name);
-        } else if ($field_name == in_array($field_name.'_id', array_keys($this->fields))) {
+        } else if (!empty($field_name) && $field_name == in_array($field_name.'_id', array_keys($this->fields))) {
             $field_name .= '_id';
             $method_name = 'get_' . $field_name;
             if (method_exists($this, $method_name)) {
@@ -70,7 +71,16 @@ abstract class BaseModel
             $field = $this->fields[$field_name]['type'];
             $field = new $field($this->fields[$field_name]);
             $id = $field->_get($this, $field_name);
-            return _i($this->fields[$field_name]['foreign_type'])->get($id);
+            if (DB_CACHING) {
+                if (isset($this->cached_fields[$field_name])) {
+                    return $this->cached_fields[$field_name];
+                }
+            }
+            $result = _i($this->fields[$field_name]['foreign_type'])->get($id);
+            if (DB_CACHING) {
+                $this->cached_fields[$field_name] = $result;
+            }
+            return $result;
         } else if (strpos($field_name, '_display') > 0) {
             $field_name = substr($field_name, 0, strpos($field_name, '_display'));
             $choices = _i($this->fields[$field_name]['choices']);
